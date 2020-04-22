@@ -1,8 +1,9 @@
 #include "Keyword.h"
 
+
 void Scanner::Keyword::LoadConfig()
 {
-	std::ifstream fs("my_keyword.config");
+	std::ifstream fs(KEYWORD_CFG);
 	char container[1024];
 	while (fs.getline(container, 1024))
 	{
@@ -31,7 +32,6 @@ bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter
 				SetBufferToken(std::get<0>(pair).c_str(), line_no, iter - 1);
 				++finished_amount;
 				raw_valid = true;
-				break;
 			}
 			else
 			{

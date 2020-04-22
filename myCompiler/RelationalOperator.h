@@ -3,7 +3,7 @@
 namespace Scanner 
 {
 	// < > <= >= == !=
-	class RelativeOperator :public BaseWord
+	class RelationalOperator :public BaseWord
 	{
 		static const size_t SINGLE_LESS = 1;
 		static const size_t SINGLE_GREATER = 2;
@@ -19,7 +19,7 @@ namespace Scanner
 			current_token.line = 0;
 		}
 	public:
-		RelativeOperator() :BaseWord(TokenType::rel_op)
+		RelationalOperator() :BaseWord(TokenType::rel_op)
 		{}
 		//virtual ParseResult Parse(const char* line_src, Token& token, const size_t& line_no, const size_t& start) override;
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;

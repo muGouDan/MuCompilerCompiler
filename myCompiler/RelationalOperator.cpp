@@ -1,4 +1,4 @@
-#include "RelativeOperator.h"
+#include "RelationalOperator.h"
 
 //Parser::ParseResult Parser::RelativeOperator::Parse(const char* line_src, Token& token, const size_t& line_no, const size_t& start)
 //{
@@ -149,7 +149,7 @@
 //	return ret;
 //}
 
-bool Scanner::RelativeOperator::Scann(char input, const size_t line_no, const size_t iter)
+bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const size_t iter)
 {
 	token_valid = false;
 	bool roll_back = true;

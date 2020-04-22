@@ -12,6 +12,7 @@ namespace Scanner
 			Case(log_op);
 			Case(arith_op);
 			Case(keyword);
+			Case(identifier);
 		default:
 			break;
 		}

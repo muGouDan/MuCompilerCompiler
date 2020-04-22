@@ -149,22 +149,24 @@
   <ItemGroup>
     <ClCompile Include="ArithmeticOperator.cpp" />
     <ClCompile Include="BaseWord.cpp" />
+    <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="Keyword.cpp" />
     <ClCompile Include="LogicalOperator.cpp" />
     <ClCompile Include="myCompiler.cpp" />
-    <ClCompile Include="RelativeOperator.cpp" />
+    <ClCompile Include="RelationalOperator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArithmeticOperator.h" />
     <ClInclude Include="BaseWord.h" />
     <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="Identifier.h" />
     <ClInclude Include="Keyword.h" />
     <ClInclude Include="LogicalOperator.h" />
-    <ClInclude Include="RelativeOperator.h" />
+    <ClInclude Include="RelationalOperator.h" />
     <ClInclude Include="Scanner.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="my_keyword.config" />
+    <Text Include="my_keyword.cfg" />
     <Text Include="test.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

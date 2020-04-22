@@ -1,5 +1,2 @@
-void main()
-{
-	int a = 1;
-	float b = a;
-}
+int a = 1;
+int32 b = 2;

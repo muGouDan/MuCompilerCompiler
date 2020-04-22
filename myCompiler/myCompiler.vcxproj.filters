@@ -21,9 +21,6 @@
     <ClCompile Include="BaseWord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RelativeOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LogicalOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,6 +28,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Keyword.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Identifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RelationalOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,9 +47,6 @@
     <ClInclude Include="BaseWord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RelativeOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LogicalOperator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -56,9 +56,15 @@
     <ClInclude Include="Keyword.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Identifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RelationalOperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
-    <Text Include="my_keyword.config" />
+    <Text Include="my_keyword.cfg" />
   </ItemGroup>
 </Project>

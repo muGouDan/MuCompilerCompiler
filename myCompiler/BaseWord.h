@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <iostream>
+#define KEYWORD_CFG "my_keyword.cfg"
 namespace Scanner
 {
 	//enum ParseResult
@@ -17,7 +18,8 @@ namespace Scanner
 		rel_op,
 		log_op,
 		arith_op,
-		keyword
+		keyword,
+		identifier
 	};
 
 	struct Token
@@ -35,7 +37,6 @@ namespace Scanner
 	};
 
 	std::ostream& operator << (std::ostream& out, const Token& token);
-
 	
 	class BaseWord
 	{

@@ -16,10 +16,11 @@ int main()
 		std::cout << "[" << std::to_string(i) << "\t]" << input[i] << std::endl;
 	}
 	std::cout << "Scanner:" << std::endl;
-	RelativeOperator RelOp;
+	RelationalOperator RelOp;
 	LogicalOperator LogOp;
 	ArithmeticOperator arithOp;
 	Keyword keyword;
+	Identifier identifier;
 	for (size_t line = 0;line<input.size();++line)
 	{
 		auto str = input[line].c_str();
@@ -32,6 +33,10 @@ int main()
 			if (keyword.Scann(c, line, iter))
 			{
 				token_set.push_back(keyword.current_token);
+			}
+			if (identifier.Scann(c, line, iter))
+			{
+				token_set.push_back(identifier.current_token);
 			}
 			// omit space
 			if (c == ' ' || c == '\t') continue;		

@@ -2,7 +2,8 @@
 #include <string>
 #include <iostream>
 #include "BaseWord.h"
-#include "RelativeOperator.h"
+#include "RelationalOperator.h"
 #include "LogicalOperator.h"
 #include "ArithmeticOperator.h"
 #include "Keyword.h"
+#include "Identifier.h"
