@@ -28,10 +28,11 @@ bool Scanner::Identifier::Scann(char input, const size_t line_no, const size_t i
 		switch (state)
 		{
 		case START:
+			char_iter = 0;
+			char_buffer[0] = '\0';
 			if (isalpha(input) || input == '_')
 			{
-				buffer_token.start = iter;
-				char_iter = 0;
+				buffer_token.start = iter;			
 				char_buffer[char_iter++] = input;
 				state = ON;
 			}
@@ -62,7 +63,6 @@ bool Scanner::Identifier::Scann(char input, const size_t line_no, const size_t i
 					state = START;	
 				else
 					CompleteTokenAndSwap(char_buffer, line_no, iter - 1);
-				char_buffer[0] = '\0';
 			}
 			break;
 		default:

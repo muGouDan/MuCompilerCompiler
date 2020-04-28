@@ -15,11 +15,13 @@ namespace Scanner
 	enum class TokenType
 	{
 		none,
-		rel_op,
-		log_op,
-		arith_op,
-		keyword,
-		identifier
+		rel_op,	
+		arith_op = 4,
+		log_op = 5,
+		digit = 6,
+		identifier = 7,
+		assign = 8,
+		keyword = 9,	
 	};
 
 	struct Token
@@ -44,7 +46,7 @@ namespace Scanner
 		TokenType type = TokenType::none;
 		static const size_t START = 0;
 		Token buffer_token;
-		size_t GetHash(const char* str)
+		constexpr size_t GetHash(const char* str) const
 		{
 			if (!*str)
 				return 0;

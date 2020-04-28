@@ -3,6 +3,7 @@
 #include <vector>
 #include "Scanner.h"
 #include "FileLoader.h"
+#include "Highlight.h"
 using namespace Scanner;
 std::vector<Token> token_set;
 
@@ -21,15 +22,56 @@ int main()
 	ArithmeticOperator arithOp;
 	Keyword keyword;
 	Identifier identifier;
+	Digit digit;
+	Assignment assign;
+
+	bool omit = false;
 	for (size_t line = 0;line<input.size();++line)
 	{
 		auto str = input[line].c_str();
 		size_t iter = 0;
 		char c;
+		bool skip = false;		
 		do
 		{
-			c = str[iter++];
-			//don't omit space
+			c = str[iter];
+			if (c == '/')
+			{
+				// for "//" comment
+				if (str[iter + 1] == '/')
+				{
+					skip = true;
+					break;
+				}
+				// for "/*"
+				else if (str[iter + 1] == '*')
+				{
+					omit = true;
+					++iter;
+				}
+			}
+			else if (c == '*' && str[iter + 1] == '/')
+			{
+				omit = false;
+				iter+=2;
+				if (str[iter] == '\0')
+					break;
+			}
+			// omit words between /**/
+			if (omit)
+			{
+				++iter;
+				continue;
+			}
+			
+			if (digit.Scann(c, line, iter))
+			{
+				token_set.push_back(digit.current_token);
+			}
+			if (assign.Scann(c, line, iter))
+			{
+				token_set.push_back(assign.current_token);
+			}
 			if (keyword.Scann(c, line, iter))
 			{
 				token_set.push_back(keyword.current_token);
@@ -38,31 +80,31 @@ int main()
 			{
 				token_set.push_back(identifier.current_token);
 			}
-			// omit space
-			if (c == ' ' || c == '\t') continue;		
-			//************************
 			if (RelOp.Scann(c, line, iter))
 			{
-				//std::cout << RelOp.current_token << std::endl;
 				token_set.push_back(RelOp.current_token);
 			}
 			if (LogOp.Scann(c, line, iter))
 			{
-				//std::cout << LogOp.current_token << std::endl;
 				token_set.push_back(LogOp.current_token);
 			}
 			if (arithOp.Scann(c, line, iter))
 			{
 				token_set.push_back(arithOp.current_token);
 			}
-			//************************
 
+			++iter;
 		} while (c != '\0');
+
+		if (skip)
+			continue;
 	}
 
-	for (auto token : token_set)
-	{
-		std::cout << token << std::endl;
-	}
+	Highlight(input, token_set);
+
+	//for (auto token : token_set)
+	//{
+	//	std::cout << token << std::endl;
+	//}
 }
 

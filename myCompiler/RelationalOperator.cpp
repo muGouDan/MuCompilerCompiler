@@ -189,8 +189,15 @@ bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const 
 				CompleteTokenAndSwap("<=", line_no, iter);
 				break;
 			default:
-				CompleteTokenAndSwap("<", line_no, iter - 1);
-				roll_back = true;
+				if (input != '<')
+				{
+					CompleteTokenAndSwap("<", line_no, iter - 1);
+					roll_back = true;
+				}
+				else
+				{
+					state = START;
+				}
 				break;
 			}
 			break;
@@ -201,8 +208,15 @@ bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const 
 				CompleteTokenAndSwap(">=", line_no, iter);
 				break;
 			default:
-				CompleteTokenAndSwap(">", line_no, iter - 1);
-				roll_back = true;
+				if (input != '>')
+				{
+					CompleteTokenAndSwap(">", line_no, iter - 1);
+					roll_back = true;
+				}
+				else
+				{
+					state = START;
+				}
 				break;
 			}
 			break;

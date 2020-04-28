@@ -7,3 +7,5 @@
 #include "ArithmeticOperator.h"
 #include "Keyword.h"
 #include "Identifier.h"
+#include "Digit.h"
+#include "Assignment.h"

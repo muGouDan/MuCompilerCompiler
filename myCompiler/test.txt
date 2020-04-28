@@ -1,2 +1,15 @@
-int a = 1;
-int32 b = 2;
+int main()
+{
+	//comment
+	float a = 4 * 5 + 2.0 + 0.4;
+	/**************
+	 *long comment*
+	 **************/
+	unsigned int b = 1;
+	b << 1;
+	if(a == b) ++a;
+	return (int)a / b;
+}
+
+
+

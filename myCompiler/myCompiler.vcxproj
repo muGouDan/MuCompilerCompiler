@@ -148,7 +148,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ArithmeticOperator.cpp" />
+    <ClCompile Include="Assignment.cpp" />
     <ClCompile Include="BaseWord.cpp" />
+    <ClCompile Include="Digit.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="Keyword.cpp" />
     <ClCompile Include="LogicalOperator.cpp" />
@@ -157,8 +159,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArithmeticOperator.h" />
+    <ClInclude Include="Assignment.h" />
     <ClInclude Include="BaseWord.h" />
+    <ClInclude Include="Digit.h" />
     <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="Highlight.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="Keyword.h" />
     <ClInclude Include="LogicalOperator.h" />

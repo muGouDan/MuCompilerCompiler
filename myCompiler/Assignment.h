@@ -2,12 +2,13 @@
 #include "BaseWord.h"
 namespace Scanner
 {
-	class ArithmeticOperator:public BaseWord
+	class Assignment :public BaseWord
 	{
-		const static size_t DIV = 1;
+		static const size_t EQ = 1;
 	public:
-		ArithmeticOperator() :BaseWord(TokenType::arith_op)
-		{}
+		Assignment():BaseWord(TokenType::assign){}
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
 	};
 }
+
+

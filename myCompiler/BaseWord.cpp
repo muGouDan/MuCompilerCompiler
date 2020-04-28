@@ -13,15 +13,15 @@ namespace Scanner
 			Case(arith_op);
 			Case(keyword);
 			Case(identifier);
+			Case(digit);
 		default:
 			break;
 		}
 		return std::cout
-			<< "type	: " << type_name << "\n"
-			<< "name	: " << token.name << "\n"
-			<< "hash	: " << token.encode << "\n"
-			<< "line:   : " << token.line << "\n"
-			<< "start	: " << token.start << "\n"
-			<< "end     : " << token.end;
+			<< "type: " << type_name << "\n"
+			<< "name: " << token.name << "\n"
+			//<< "hash: " << token.encode << "\n"
+			<< "line: " << token.line << " "<< "start: " << token.start << " "<< "end: " << token.end
+			;
 	}
 }

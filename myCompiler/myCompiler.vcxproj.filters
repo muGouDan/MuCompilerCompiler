@@ -36,6 +36,12 @@
     <ClCompile Include="RelationalOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Digit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assignment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scanner.h">
@@ -60,6 +66,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RelationalOperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Digit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assignment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Highlight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
