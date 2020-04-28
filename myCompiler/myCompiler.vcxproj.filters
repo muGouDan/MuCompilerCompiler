@@ -42,6 +42,12 @@
     <ClCompile Include="Assignment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Separator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Highlight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scanner.h">
@@ -77,9 +83,12 @@
     <ClInclude Include="Highlight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Separator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="test.txt" />
     <Text Include="my_keyword.cfg" />
+    <Text Include="test.txt" />
   </ItemGroup>
 </Project>

@@ -24,6 +24,7 @@ int main()
 	Identifier identifier;
 	Digit digit;
 	Assignment assign;
+	Separator separator;
 
 	bool omit = false;
 	for (size_t line = 0;line<input.size();++line)
@@ -62,8 +63,7 @@ int main()
 			{
 				++iter;
 				continue;
-			}
-			
+			}			
 			if (digit.Scann(c, line, iter))
 			{
 				token_set.push_back(digit.current_token);
@@ -92,7 +92,11 @@ int main()
 			{
 				token_set.push_back(arithOp.current_token);
 			}
-
+			//last to do: sparator 
+			if (separator.Scann(c, line, iter))
+			{
+				token_set.push_back(separator.current_token);
+			}
 			++iter;
 		} while (c != '\0');
 
@@ -102,9 +106,9 @@ int main()
 
 	Highlight(input, token_set);
 
-	//for (auto token : token_set)
-	//{
-	//	std::cout << token << std::endl;
-	//}
+	for (auto token : token_set)
+	{
+		std::cout << token << std::endl;
+	}
 }
 

@@ -6,7 +6,8 @@ namespace Scanner
 	{
 		static const size_t EQ = 1;
 	public:
-		Assignment():BaseWord(TokenType::assign){}
+		Assignment():BaseWord(TokenType::assign,ConsoleForegroundColor::enmCFC_Gray)
+		{}
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
 	};
 }

@@ -151,11 +151,13 @@
     <ClCompile Include="Assignment.cpp" />
     <ClCompile Include="BaseWord.cpp" />
     <ClCompile Include="Digit.cpp" />
+    <ClCompile Include="Highlight.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="Keyword.cpp" />
     <ClCompile Include="LogicalOperator.cpp" />
     <ClCompile Include="myCompiler.cpp" />
     <ClCompile Include="RelationalOperator.cpp" />
+    <ClCompile Include="Separator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArithmeticOperator.h" />
@@ -169,6 +171,7 @@
     <ClInclude Include="LogicalOperator.h" />
     <ClInclude Include="RelationalOperator.h" />
     <ClInclude Include="Scanner.h" />
+    <ClInclude Include="Separator.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="my_keyword.cfg" />

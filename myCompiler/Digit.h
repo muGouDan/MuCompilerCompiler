@@ -17,7 +17,8 @@ namespace Scanner
 		std::vector<std::string> keywords;
 		std::string str_helper;
 	public:
-		Digit():BaseWord(TokenType::digit){}
+		Digit():BaseWord(TokenType::digit,(ConsoleForegroundColor)6/*yellow*/)
+		{}
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
 	};
 }

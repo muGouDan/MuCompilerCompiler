@@ -14,7 +14,7 @@ namespace Scanner
 		std::string str_helper;
 		void LoadConfig();
 	public:
-		Identifier() :BaseWord(TokenType::identifier)
+		Identifier() :BaseWord(TokenType::identifier,ConsoleForegroundColor::enmCFC_White)
 		{
 			LoadConfig();
 		}

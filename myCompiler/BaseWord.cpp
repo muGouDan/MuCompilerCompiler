@@ -14,6 +14,8 @@ namespace Scanner
 			Case(keyword);
 			Case(identifier);
 			Case(digit);
+			Case(assign);
+			Case(separator);
 		default:
 			break;
 		}

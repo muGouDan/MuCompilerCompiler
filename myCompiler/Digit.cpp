@@ -68,6 +68,7 @@ bool Scanner::Digit::Scann(char input, const size_t line_no, const size_t iter)
 		}
 		break;
 	default:
+		throw std::logic_error("no such state");
 		break;
 	}
 	return token_valid;

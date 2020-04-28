@@ -10,7 +10,7 @@ namespace Scanner
 		const static size_t SINGLE_AND = 3;
 		const static size_t SINGLE_OR = 4;
 	public:
-		LogicalOperator() :BaseWord(TokenType::log_op)
+		LogicalOperator() :BaseWord(TokenType::log_op, ConsoleForegroundColor::enmCFC_Purple)
 		{}
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
 	};

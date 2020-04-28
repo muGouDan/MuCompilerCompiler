@@ -2,12 +2,13 @@
 #include "BaseWord.h"
 namespace Scanner
 {
-	class ArithmeticOperator:public BaseWord
+	class Separator :public BaseWord
 	{
-		const static size_t DIV = 1;
+		const static size_t SINGLE_COLON = 1;
 	public:
-		ArithmeticOperator() :BaseWord(TokenType::arith_op,ConsoleForegroundColor::enmCFC_Red)
+		Separator() :BaseWord(TokenType::separator, (ConsoleForegroundColor)14/*tint red*/)
 		{}
 		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
 	};
 }
+

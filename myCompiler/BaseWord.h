@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <Windows.h>
+#include "Highlight.h"
 #define KEYWORD_CFG "my_keyword.cfg"
 namespace Scanner
 {
@@ -16,17 +18,19 @@ namespace Scanner
 	{
 		none,
 		rel_op,	
-		arith_op = 4,
-		log_op = 5,
-		digit = 6,
-		identifier = 7,
-		assign = 8,
-		keyword = 9,	
+		arith_op,
+		log_op,
+		digit,
+		identifier,
+		assign,
+		keyword,
+		separator
 	};
 
 	struct Token
 	{
 		TokenType type = TokenType::none;
+		ConsoleForegroundColor color = ConsoleForegroundColor::enmCFC_White;
 		std::string name;
 		size_t encode = 0;
 		size_t line = 0;
@@ -44,6 +48,7 @@ namespace Scanner
 	{
 	protected:
 		TokenType type = TokenType::none;
+		ConsoleForegroundColor color = ConsoleForegroundColor::enmCFC_White;
 		static const size_t START = 0;
 		Token buffer_token;
 		constexpr size_t GetHash(const char* str) const
@@ -62,6 +67,7 @@ namespace Scanner
 		{		
 			buffer_token.name = name;
 			buffer_token.type = type;
+			buffer_token.color = color;
 			buffer_token.encode = GetHash(name);
 			buffer_token.end = end;
 			buffer_token.line = line_no;
@@ -72,7 +78,8 @@ namespace Scanner
 			token_valid = true;
 		}
 	public:
-		BaseWord(TokenType type):type(type)
+		BaseWord(TokenType type, ConsoleForegroundColor color):
+			type(type),color(color)
 		{}
 
 		bool token_valid = false;

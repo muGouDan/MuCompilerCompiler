@@ -9,3 +9,4 @@
 #include "Identifier.h"
 #include "Digit.h"
 #include "Assignment.h"
+#include "Separator.h"

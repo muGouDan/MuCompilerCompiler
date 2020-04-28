@@ -29,7 +29,7 @@ namespace Scanner
 		bool raw_valid = false;
 		size_t finished_amount = 0;
 	public:
-		Keyword():BaseWord(TokenType::keyword)
+		Keyword():BaseWord(TokenType::keyword,ConsoleForegroundColor::enmCFC_Blue)
 		{
 			LoadConfig();
 		}
@@ -38,6 +38,7 @@ namespace Scanner
 		{
 			buffer_token.name = name;
 			buffer_token.type = type;
+			buffer_token.color = color;
 			buffer_token.encode = GetHash(name);
 			buffer_token.end = end;
 			buffer_token.line = line_no;
