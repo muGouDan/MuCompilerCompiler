@@ -4,7 +4,7 @@ namespace Scanner
 {
 	class ArithmeticOperator:public BaseWord
 	{
-		const static size_t DIV = 1;
+		//const static size_t DIV = 1;
 	public:
 		ArithmeticOperator() :BaseWord(TokenType::arith_op,ConsoleForegroundColor::enmCFC_Red)
 		{}

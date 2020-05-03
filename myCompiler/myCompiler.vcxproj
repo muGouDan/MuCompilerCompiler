@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArithmeticExpression.cpp" />
     <ClCompile Include="ArithmeticOperator.cpp" />
     <ClCompile Include="Assignment.cpp" />
     <ClCompile Include="BaseWord.cpp" />
@@ -160,22 +161,26 @@
     <ClCompile Include="Separator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArithmeticExpression.h" />
     <ClInclude Include="ArithmeticOperator.h" />
     <ClInclude Include="Assignment.h" />
     <ClInclude Include="BaseWord.h" />
     <ClInclude Include="Digit.h" />
     <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="first_follow_select.h" />
     <ClInclude Include="Highlight.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="Keyword.h" />
     <ClInclude Include="LogicalOperator.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="RelationalOperator.h" />
     <ClInclude Include="Scanner.h" />
     <ClInclude Include="Separator.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="my_keyword.cfg" />
-    <Text Include="test.txt" />
+    <Text Include="parser_test.txt" />
+    <Text Include="scanner_test.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

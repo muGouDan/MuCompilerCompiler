@@ -4,12 +4,16 @@
 #include "Scanner.h"
 #include "FileLoader.h"
 #include "Highlight.h"
+#include "Parser.h"
+#include "first_follow_select.h"
 using namespace Scanner;
+using namespace Parser;
 std::vector<Token> token_set;
 
 int main()
 {
-	auto input = FileLoader("test.txt");
+	auto input = FileLoader("parser_test.txt");
+	//auto input = FileLoader("scanner_test.txt");
 	
 	std::cout << "Input:" << std::endl;
 	for (size_t i = 0; i < input.size(); i++)
@@ -106,9 +110,26 @@ int main()
 
 	Highlight(input, token_set);
 
-	for (auto token : token_set)
-	{
-		std::cout << token << std::endl;
-	}
+	ArithmeticExpression arithmeticExpression;
+	arithmeticExpression.Parse(token_set, 0);
+
+	//for (auto token : token_set)
+	//{
+	//	std::cout << token << std::endl;
+	//}
+	auto first_table = SetHelper<Example::symbol>::FIRST(
+		Example::pro, Example::epsilon, Example::id, Example::E);
+	std::cout << "\nfirst_table" << std::endl;
+	SetHelper<Example::symbol>::Show(first_table);
+	
+	auto follow_table = SetHelper<Example::symbol>::FOLLOW(
+		first_table, Example::pro, Example::epsilon, Example::end, Example::E);
+	std::cout << "\nfollow_table" << std::endl;
+	SetHelper<Example::symbol>::Show(follow_table);
+	
+	auto LL1_table = SetHelper<Example::symbol>::Preanalysis(
+		first_table, follow_table, Example::pro, Example::epsilon, Example::end, Example::E);
+	std::cout << "\nLL1_table" << std::endl;
+	SetHelper<Example::symbol>::Show(LL1_table);
 }
 

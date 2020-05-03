@@ -13,82 +13,117 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{d76ebb26-975e-4c1d-8b80-8ccbe0453f86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scanner">
+      <UniqueIdentifier>{1817c110-1080-4592-9afc-1b4dc0f8b46c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scanner">
+      <UniqueIdentifier>{587e5e9d-84af-4297-92b2-0778b16947e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Parser">
+      <UniqueIdentifier>{d98269ab-091d-48ea-8aba-a6a667cad4b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Parser">
+      <UniqueIdentifier>{4f50c9ea-028a-44ea-a724-466aec22035d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other">
+      <UniqueIdentifier>{32052fb8-fa7a-4336-b9b0-0f546e77147e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="myCompiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseWord.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LogicalOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ArithmeticOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyword.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Identifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RelationalOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Digit.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scanner</Filter>
     </ClCompile>
     <ClCompile Include="Assignment.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scanner</Filter>
     </ClCompile>
-    <ClCompile Include="Separator.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="BaseWord.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="Digit.cpp">
+      <Filter>Source Files\Scanner</Filter>
     </ClCompile>
     <ClCompile Include="Highlight.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="Identifier.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyword.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicalOperator.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="RelationalOperator.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="Separator.cpp">
+      <Filter>Source Files\Scanner</Filter>
+    </ClCompile>
+    <ClCompile Include="ArithmeticExpression.cpp">
+      <Filter>Source Files\Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Scanner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseWord.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LogicalOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ArithmeticOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyword.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Identifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RelationalOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Digit.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Scanner</Filter>
     </ClInclude>
     <ClInclude Include="Assignment.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseWord.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="Digit.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="FileLoader.h">
+      <Filter>Header Files\Scanner</Filter>
     </ClInclude>
     <ClInclude Include="Highlight.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="Identifier.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyword.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicalOperator.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="RelationalOperator.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="Scanner.h">
+      <Filter>Header Files\Scanner</Filter>
     </ClInclude>
     <ClInclude Include="Separator.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Header Files\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ArithmeticExpression.h">
+      <Filter>Header Files\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="first_follow_select.h">
+      <Filter>Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="my_keyword.cfg" />
-    <Text Include="test.txt" />
+    <Text Include="scanner_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="parser_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
