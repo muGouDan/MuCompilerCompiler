@@ -5,15 +5,15 @@
 #include "FileLoader.h"
 #include "Highlight.h"
 #include "Parser.h"
-#include "first_follow_select.h"
+#include "SetHelper.h"
 using namespace Scanner;
 using namespace Parser;
 std::vector<Token> token_set;
 
 int main()
 {
-	auto input = FileLoader("parser_test.txt");
-	//auto input = FileLoader("scanner_test.txt");
+	//auto input = FileLoader("parser_test.txt");
+	auto input = FileLoader("scanner_test.txt");
 	
 	std::cout << "Input:" << std::endl;
 	for (size_t i = 0; i < input.size(); i++)
@@ -117,19 +117,25 @@ int main()
 	//{
 	//	std::cout << token << std::endl;
 	//}
-	auto first_table = SetHelper<Example::symbol>::FIRST(
-		Example::pro, Example::epsilon, Example::id, Example::E);
+	auto first_table = SetHelper<Example::LL1::symbol>::FIRST(
+		Example::LL1::pro, Example::LL1::epsilon, Example::LL1::id, Example::LL1::E);
 	std::cout << "\nfirst_table" << std::endl;
-	SetHelper<Example::symbol>::Show(first_table);
+	SetHelper<Example::LL1::symbol>::Show(first_table);
 	
-	auto follow_table = SetHelper<Example::symbol>::FOLLOW(
-		first_table, Example::pro, Example::epsilon, Example::end, Example::E);
+	auto follow_table = SetHelper<Example::LL1::symbol>::FOLLOW(
+		first_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
 	std::cout << "\nfollow_table" << std::endl;
-	SetHelper<Example::symbol>::Show(follow_table);
+	SetHelper<Example::LL1::symbol>::Show(follow_table);
 	
-	auto LL1_table = SetHelper<Example::symbol>::Preanalysis(
-		first_table, follow_table, Example::pro, Example::epsilon, Example::end, Example::E);
+	auto LL1_table = SetHelper<Example::LL1::symbol>::Preanalysis(
+		first_table, follow_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
 	std::cout << "\nLL1_table" << std::endl;
-	SetHelper<Example::symbol>::Show(LL1_table);
+	SetHelper<Example::LL1::symbol>::Show(LL1_table);
+
+	auto back = SetHelper<Example::LR::symbol>::COLLECTION(
+		Example::LR::pro, Example::LR::epsilon, Example::LR::end, Example::LR::E_);
+	
+	const auto& states = std::get<0>(back);
+	const auto& goto_table = std::get<1>(back);
 }
 

@@ -113,7 +113,7 @@
     <ClInclude Include="ArithmeticExpression.h">
       <Filter>Header Files\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="first_follow_select.h">
+    <ClInclude Include="SetHelper.h">
       <Filter>Other</Filter>
     </ClInclude>
   </ItemGroup>

@@ -167,7 +167,7 @@
     <ClInclude Include="BaseWord.h" />
     <ClInclude Include="Digit.h" />
     <ClInclude Include="FileLoader.h" />
-    <ClInclude Include="first_follow_select.h" />
+    <ClInclude Include="SetHelper.h" />
     <ClInclude Include="Highlight.h" />
     <ClInclude Include="Identifier.h" />
     <ClInclude Include="Keyword.h" />

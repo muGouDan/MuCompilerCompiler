@@ -43,12 +43,12 @@ void SetConsoleColor(ConsoleForegroundColor foreColor = enmCFC_White, ConsoleBac
 template<typename Input,typename TokenSet>
 void Highlight(Input&& input, TokenSet&& token_set)
 {
-	auto token_iter = 0;
+	size_t token_iter = 0;
 	for (size_t i = 0; i < input.size(); i++)
 	{
 		SetConsoleColor(enmCFC_White);
 		std::cout << "[" << std::to_string(i) << "\t]";
-		int j = 0;
+		size_t j = 0;
 		bool over = false;
 		while (j < input[i].size())
 		{
