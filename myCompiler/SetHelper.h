@@ -4,6 +4,14 @@
 #include <map>
 #include <set>
 #include <cassert>
+enum class ActionType
+{
+	error = -1,
+	accept,
+	move_in,
+	reduce
+};
+
 template <typename T>
 class SetHelper
 {
@@ -52,7 +60,7 @@ public:
 				&& point_pos == obj.point_pos;
 		}
 
-		bool operator < (const Item& rhs) const 
+		bool operator < (const Item& rhs) const
 		{
 			if (nonterm < rhs.nonterm) return true;
 			if (nonterm == rhs.nonterm
@@ -69,7 +77,7 @@ public:
 	struct SimplifiedSetOfItems
 	{
 		SimplifiedSetOfItems(const std::set<Item>& cores, size_t non_core_size) :
-			cores(cores), non_cores(non_core_size,false)
+			cores(cores), non_cores(non_core_size, false)
 		{}
 
 		// e.g. {[E'->E.],[E->E. + T]} 
@@ -101,7 +109,26 @@ public:
 	using CollectionOfItemSets = std::vector<SimplifiedSetOfItems>;
 
 	// GOTO[state,symbol] -> next state
-	using Goto_Table = std::map<std::tuple<int, T>, int>;
+	using Goto_Table = std::map<std::tuple<size_t, T>, size_t>;
+
+	// type == ActionType::move_in		aim_state available
+	// type == ActionType::reduce		nonterm,production_length available 
+	// type == ActionType::accept		--
+	// type == ActionType::error		--
+	struct Action
+	{
+		ActionType type = ActionType::error;
+		union 
+		{
+			size_t aim_state = 0;
+			T nonterm;
+		};
+		size_t production_length = 0;
+	};
+
+	// Action_Table for SLR
+	using Action_Table = std::map<std::tuple<size_t, T>, Action>;
+
 
 	static void Show(const std::vector<std::set<T>>& table)
 	{
@@ -205,8 +232,13 @@ public:
 	static std::tuple<CollectionOfItemSets, Goto_Table> COLLECTION(
 		const Production_Table& production_table,
 		const T& epsilon, const T& end, const T& start = (T)0);
-	
 
+	static Action_Table SetActionTable(
+		const Production_Table& production_table,
+		const CollectionOfItemSets& collection,
+		const Goto_Table& goto_table,
+		const Follow_Table& follow_table,
+		const T& epsilon, const T& end, const T& start = (T)0);
 private:
 	// term > epsilon > nonterm
 	static void setup_first_table(
@@ -402,7 +434,7 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 }
 
 template<typename T>
-std::tuple<typename SetHelper<T>::CollectionOfItemSets,typename SetHelper<T>::Goto_Table> 
+std::tuple<typename SetHelper<T>::CollectionOfItemSets, typename SetHelper<T>::Goto_Table>
 SetHelper<T>::COLLECTION(const Production_Table& production_table, const T& epsilon, const T& end, const T& start)
 {
 	std::tuple<CollectionOfItemSets, Goto_Table> ret;
@@ -466,6 +498,75 @@ SetHelper<T>::COLLECTION(const Production_Table& production_table, const T& epsi
 				}
 			}
 		start_pos = iter;
+	}
+	return ret;
+}
+
+template<typename T>
+typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
+	const Production_Table& production_table,
+	const CollectionOfItemSets& collection,
+	const Goto_Table& goto_table,
+	const Follow_Table& follow_table,
+	const T& epsilon, const T& end, const T& start)
+{
+	Action_Table ret;
+	auto int_end = (int)end;
+	auto int_epsilon = (int)epsilon;
+	auto int_start = (int)start;
+	for (const auto& item : goto_table)
+	{		
+		auto sym = std::get<1>(std::get<0>(item));
+		auto int_sym = (int)sym;
+		auto cur_state = std::get<0>(std::get<0>(item));
+		auto aim_state = std::get<1>(item);
+		// every certain goto in goto_table
+		if (int_sym >= int_epsilon && int_sym < int_end)
+			// if the state is A->¦Á.a¦Â, a is a term
+		{
+			// then ACTION[i,a] = move in a
+			Action a;
+			a.type = ActionType::move_in;
+			// also record the next state to be moved into the stack
+			a.aim_state = aim_state;
+			a.production_length = 0;
+			ret[{cur_state, sym}] = std::move(a);
+		}
+	}
+	for (size_t i = 0; i < collection.size(); ++i)
+	{
+		// every certain Ii
+		for (const Item& core : collection[i].cores)
+		{
+			// every certain core
+			auto production_length = production_table[(int)core.nonterm][core.production_index].size();
+			if (core.point_pos >= production_length)
+				// if the state is A->¦Á.
+			{
+				if (core.nonterm == start)
+					// if S'-> S.
+				{
+					// then ACTION[i,$] = accept
+					Action a;
+					a.type = ActionType::accept;
+					a.aim_state = 0;
+					a.production_length = production_length;
+					ret[{i, end}] = std::move(a);
+				}
+				else
+					for (const auto& term : follow_table[(int)core.nonterm])
+					{
+						// then for every term a, in FOLLOW(A)
+						// ACTION[i,a] = reduce A->¦Á
+						Action a;
+						a.type = ActionType::reduce;
+						// also record the head of the production
+						a.nonterm = core.nonterm;
+						a.production_length = production_length;
+						ret[{i, term}] = std::move(a);
+					}
+			}
+		}
 	}
 	return ret;
 }
@@ -597,98 +698,4 @@ void SetHelper<T>::set_follow_of_X_with_certain_beta(
 	}
 }
 
-
-namespace Example
-{
-	namespace LL1
-	{
-		// for LL1
-		enum symbol
-		{
-			E,
-			E_,
-			T,
-			T_,
-			F,
-			epsilon,
-			//term		column
-			mul,		//*			0
-			plus,		//+			1
-			lp,			//(			2
-			rp,			//)			3
-			id,			//			4
-			end			//$			5
-		};
-
-		SetHelper<symbol>::Production_Table pro =
-		{
-			// E
-			{
-				{T,E_}			//E -> TE'
-			},
-			// E_
-			{
-				{plus,T,E_},	//E' -> +TE'
-				{epsilon}		//E' -> epsilon
-			},
-			// T
-			{
-				{F,T_}			//T -> FT'
-			},
-			// T_
-			{
-				{mul,F,T_},		//T' -> *FT'
-				{epsilon}		//T' -> epsilon
-			},
-			// F
-			{
-				{lp,E,rp},		//F -> (E)
-				{id}			//F -> id
-			}
-
-		};
-	}
-
-	namespace LR
-	{
-		// for LR
-		enum symbol
-		{
-			E_,
-			E,
-			T,
-			F,
-			epsilon,
-			plus,
-			mul,
-			lp,
-			rp,
-			id,
-			end
-		};
-
-		SetHelper<symbol>::Production_Table pro =
-		{
-			// E_->E
-			{
-				{E}
-			},
-			// E->E+T|T
-			{
-				{E,plus,T},
-				{T}
-			},
-			// T->T*F|F
-			{
-				{T,mul,F},
-				{F}
-			},
-			// F
-			{
-				{lp,E,rp},
-				{id}
-			}
-		};
-	}
-}
 

@@ -28,9 +28,6 @@
     <Filter Include="Source Files\Parser">
       <UniqueIdentifier>{4f50c9ea-028a-44ea-a724-466aec22035d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Other">
-      <UniqueIdentifier>{32052fb8-fa7a-4336-b9b0-0f546e77147e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="myCompiler.cpp">
@@ -68,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="ArithmeticExpression.cpp">
       <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="SLRParser.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="SetHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,8 +116,14 @@
     <ClInclude Include="ArithmeticExpression.h">
       <Filter>Header Files\Parser</Filter>
     </ClInclude>
+    <ClInclude Include="SLRParser.h">
+      <Filter>Header Files\Parser</Filter>
+    </ClInclude>
     <ClInclude Include="SetHelper.h">
-      <Filter>Other</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
