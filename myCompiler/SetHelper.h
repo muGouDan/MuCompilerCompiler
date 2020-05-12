@@ -172,9 +172,9 @@ public:
 
 	static First_Table FIRST(
 		const Production_Table& production_table,
-		const T epsilon, const T last, const T first = 0)
+		const T epsilon, const T last_term, const T first = (T)0)
 	{
-		auto int_last = (int)last;
+		auto int_last = (int)last_term;
 		auto int_first = (int)first;
 		First_Table ret(int_last + 1);
 		bool changed = true;
@@ -697,5 +697,3 @@ void SetHelper<T>::set_follow_of_X_with_certain_beta(
 		}
 	}
 }
-
-

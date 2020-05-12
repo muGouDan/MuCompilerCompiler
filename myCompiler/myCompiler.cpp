@@ -9,12 +9,13 @@
 #include "Examples.h"
 using namespace Scanner;
 using namespace Parser;
+Example::LR::symbol transfer(const Scanner::Token& token);
 std::vector<Token> token_set;
 
 int main()
 {
-	//auto input = FileLoader("parser_test.txt");
-	auto input = FileLoader("scanner_test.txt");
+	auto input = FileLoader("parser_test.txt");
+	//auto input = FileLoader("scanner_test.txt");
 
 	std::cout << "Input:" << std::endl;
 	for (size_t i = 0; i < input.size(); i++)
@@ -121,42 +122,78 @@ int main()
 	
 
 	//LL(1)
-	{
-		auto first_table = SetHelper<Example::LL1::symbol>::FIRST(
-			Example::LL1::pro, Example::LL1::epsilon, Example::LL1::id, Example::LL1::E);
-		std::cout << "\nfirst_table" << std::endl;
-		//SetHelper<Example::LL1::symbol>::Show(first_table);
-
-		auto follow_table = SetHelper<Example::LL1::symbol>::FOLLOW(
-			first_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
-		std::cout << "\nfollow_table" << std::endl;
-		SetHelper<Example::LL1::symbol>::Show(follow_table);
-
-		auto LL1_table = SetHelper<Example::LL1::symbol>::Preanalysis(
-			first_table, follow_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
-		std::cout << "\nLL1_table" << std::endl;
-		SetHelper<Example::LL1::symbol>::Show(LL1_table);
-	}
+	//{
+	//	auto first_table = SetHelper<Example::LL1::symbol>::FIRST(
+	//		Example::LL1::pro, Example::LL1::epsilon, Example::LL1::id, Example::LL1::E);
+	//	std::cout << "\nfirst_table" << std::endl;
+	//	//SetHelper<Example::LL1::symbol>::Show(first_table);
+	//
+	//	auto follow_table = SetHelper<Example::LL1::symbol>::FOLLOW(
+	//		first_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
+	//	std::cout << "\nfollow_table" << std::endl;
+	//	SetHelper<Example::LL1::symbol>::Show(follow_table);
+	//
+	//	auto LL1_table = SetHelper<Example::LL1::symbol>::Preanalysis(
+	//		first_table, follow_table, Example::LL1::pro, Example::LL1::epsilon, Example::LL1::end, Example::LL1::E);
+	//	std::cout << "\nLL1_table" << std::endl;
+	//	SetHelper<Example::LL1::symbol>::Show(LL1_table);
+	//}
 
 	//SLR
-	{
-		auto first_table = SetHelper<Example::LR::symbol>::FIRST(
-			Example::LR::pro, Example::LR::epsilon, Example::LR::id, Example::LR::E_);
+	//{
+	//	auto first_table = SetHelper<Example::LR::symbol>::FIRST(
+	//		Example::LR::pro, Example::LR::epsilon, Example::LR::id, Example::LR::E_);
 
-		auto follow_table = SetHelper<Example::LR::symbol>::FOLLOW(
-			first_table, Example::LR::pro, Example::LR::epsilon, Example::LR::end, Example::LR::E_);
-		std::cout << "\nfollow_table" << std::endl;
-		SetHelper<Example::LR::symbol>::Show(follow_table);
+	//	auto follow_table = SetHelper<Example::LR::symbol>::FOLLOW(
+	//		first_table, Example::LR::pro, Example::LR::epsilon, Example::LR::end, Example::LR::E_);
+	//	std::cout << "\nfollow_table" << std::endl;
+	//	SetHelper<Example::LR::symbol>::Show(follow_table);
+	//
+	//	auto back = SetHelper<Example::LR::symbol>::COLLECTION(
+	//		Example::LR::pro, Example::LR::epsilon, Example::LR::end, Example::LR::E_);
+	//
+	//	const auto& states = std::get<0>(back);
+	//	const auto& goto_table = std::get<1>(back);
+	//
+	//	auto action_table = SetHelper<Example::LR::symbol>::SetActionTable(
+	//		Example::LR::pro, states, goto_table, follow_table, 
+	//		Example::LR::epsilon, Example::LR::end, Example::LR::E_);
+	//}
 
-		auto back = SetHelper<Example::LR::symbol>::COLLECTION(
-			Example::LR::pro, Example::LR::epsilon, Example::LR::end, Example::LR::E_);
-
-		const auto& states = std::get<0>(back);
-		const auto& goto_table = std::get<1>(back);
-
-		auto action_table = SetHelper<Example::LR::symbol>::SetActionTable(
-			Example::LR::pro, states, goto_table, follow_table, 
-			Example::LR::epsilon, Example::LR::end, Example::LR::E_);
+	{	
+		SLRParser<Example::LR::symbol> slr(
+			Example::LR::pro, Example::LR::id,Example::LR::end,
+			Example::LR::epsilon, Example::LR::E_);
+		slr.Parse(token_set, transfer);
 	}
 }
 
+//T(*)(const Scanner::Token&);
+Example::LR::symbol transfer(const Scanner::Token& token)
+{
+	Example::LR::symbol ret = Example::LR::symbol::none;
+	switch (token.type)
+	{
+	case Scanner::TokenType::identifier:
+	case Scanner::TokenType::digit:
+		ret = Example::LR::symbol::id;
+		break;
+	case Scanner::TokenType::arith_op:
+		if (token.name == "+" || token.name == "-")
+			ret = Example::LR::symbol::plus;
+		else if (token.name == "*" || token.name == "/")
+			ret = Example::LR::symbol::mul;
+		else if (token.name == "(")
+			ret = Example::LR::symbol::lp;
+		else if (token.name == ")")
+			ret = Example::LR::symbol::rp;
+		break;
+	case Scanner::TokenType::separator:
+		ret = Example::LR::symbol::end;
+		break;
+	default:
+		ret = Example::LR::symbol::end;
+		break;
+	}
+	return ret;
+}

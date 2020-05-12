@@ -56,6 +56,7 @@ namespace Example
 		// for LR
 		enum symbol
 		{
+			none = -1,
 			E_,
 			E,
 			T,
