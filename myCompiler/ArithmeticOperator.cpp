@@ -18,7 +18,7 @@ bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const 
 				break;
 			case '-':
 				buffer_token.start = iter;
-				CompleteTokenAndSwap("-", line_no, iter);
+				state = MINUS;
 				break;
 			case '*':
 				buffer_token.start = iter;
@@ -40,6 +40,12 @@ bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const 
 				state = START;
 				break;
 			}
+			break;
+		case MINUS:
+			if (input != '>')
+				CompleteTokenAndSwap("-", line_no, iter - 1);
+			else
+				state = START;
 			break;
 		default:
 			throw(std::logic_error("no such state"));

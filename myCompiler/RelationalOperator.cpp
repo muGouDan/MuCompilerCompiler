@@ -1,154 +1,4 @@
 #include "RelationalOperator.h"
-
-//Parser::ParseResult Parser::RelativeOperator::Parse(const char* line_src, Token& token, const size_t& line_no, const size_t& start)
-//{
-//	size_t iter = start;
-//	char cur_char = '\0';
-//	size_t state = START;
-//	ParseResult ret;
-//	bool on = true;
-//	//for token
-//	size_t token_start = -1;
-//
-//	while (on)
-//	{
-//		cur_char = line_src[iter];
-//		// get the char which isn't space or tab
-//		while (cur_char == ' ' || cur_char == '\t') cur_char = line_src[++iter];
-//		switch (cur_char)
-//		{
-//		case '<':
-//			if (state == START)//''
-//			{
-//				state = LESS;//'<'
-//				token_start = iter;
-//			}
-//			else
-//			{
-//				on = false;
-//				ret = ParseResult::error;
-//			}
-//			break;
-//		case '>':
-//			if (state == START)//''
-//			{
-//				state = GREATER;//'>'
-//				token_start = iter;
-//			}
-//			else
-//			{
-//				on = false;
-//				ret = ParseResult::error;
-//			}
-//			break;
-//		case '=':
-//			switch (state)
-//			{
-//			case START:
-//				state = EQ;
-//				token_start = iter;
-//				break;
-//			case LESS:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.end = iter;
-//				token.name = "<=";
-//				break;
-//			case GREATER:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.end = iter;
-//				token.name = ">=";
-//				break;
-//			case EQ:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.end = iter;
-//				token.name = "==";
-//				break;
-//			case NE:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.end = iter;
-//				token.name = "!=";
-//				break;
-//			default:
-//				on = false;
-//				ret = ParseResult::error;
-//				break;
-//			}
-//			break;
-//		case '!':
-//			if (state == START)
-//			{
-//				state = NE;
-//				token_start = iter;
-//			}
-//			else
-//			{
-//				on = false;
-//				ret = ParseResult::error;
-//			}
-//			break;
-//		case '\0':
-//			if (state == START)
-//			{
-//				on = false;
-//				ret = ParseResult::end_of_file;
-//			}
-//			else
-//			{
-//				on = false;
-//				ret = (ParseResult)(success | ParseResult::end_of_file);
-//				token.name = "<";
-//				token.end = --iter;
-//			}
-//			break;
-//		case '\n':
-//			if (state == START)
-//			{
-//				on = false;
-//				ret = ParseResult::end_of_line;
-//			}
-//			else
-//			{
-//				on = false;
-//				ret = (ParseResult)(success | ParseResult::end_of_file);
-//				token.name = ">";
-//				token.end = --iter;
-//			}
-//			break;
-//		default:
-//			switch (state)
-//			{
-//			case LESS:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.name = "<";
-//				token.end = --iter;
-//				break;
-//			case GREATER:
-//				on = false;
-//				ret = ParseResult::success;
-//				token.name = ">";
-//				token.end = --iter;
-//			default:
-//				break;
-//			}
-//			break;
-//		}
-//		++iter;
-//	}
-//	if (static_cast<int>(ret) & static_cast<int>(ParseResult::success))
-//	{
-//		token.start = token_start;
-//		token.type = TokenType::rel_op;
-//		token.line = line_no;
-//		token.encode = GetHash(token.name.c_str());
-//	}
-//	return ret;
-//}
-
 bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const size_t iter)
 {
 	token_valid = false;
@@ -166,8 +16,15 @@ bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const 
 				buffer_token.start = iter;
 				break;
 			case '>':
-				state = SINGLE_GREATER;
-				buffer_token.start = iter;
+				if (last_input != '-')
+				{
+					state = SINGLE_GREATER;
+					buffer_token.start = iter;
+				}
+				else
+				{
+					state = START;
+				}			
 				break;
 			case '=':
 				state = SINGLE_EQ;
@@ -249,6 +106,7 @@ bool Scanner::RelationalOperator::Scann(char input, const size_t line_no, const 
 			break;
 		}
 	}
+	last_input = input;
 	return token_valid;
 }
 //switch (input)

@@ -21,6 +21,9 @@ void Scanner::Keyword::LoadConfig()
 
 bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter)
 {
+	if (input == '\"') str_ = !str_;
+	else if (input == '\'') char_ = !char_;
+	if (char_ || str_) return false;
 	for (auto& pair : pairs)
 	{
 		if (std::get<1>(pair) == OFF)
@@ -45,12 +48,12 @@ bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter
 			if (std::get<1>(pair) == START)
 			{
 				++std::get<2>(pair);
-				std::get<1>(pair) = ON;
+				std::get<1>(pair) = HEAD;
 				buffer_token.start = iter;
 			}			
 			else
 			{
-				std::get<1>(pair) = ON;
+				std::get<1>(pair) = HEAD;
 				++std::get<2>(pair);
 			}
 		}

@@ -3,6 +3,11 @@
 bool Scanner::Digit::Scann(char input, const size_t line_no, const size_t iter)
 {
 	token_valid = false;
+	if (last_char == '_' || isalpha(last_char))
+	{
+		last_char = input;
+		return false;
+	}	
 	switch (state)
 	{
 	case START:
@@ -71,5 +76,6 @@ bool Scanner::Digit::Scann(char input, const size_t line_no, const size_t iter)
 		throw std::logic_error("no such state");
 		break;
 	}
+	last_char = input;
 	return token_valid;
 }

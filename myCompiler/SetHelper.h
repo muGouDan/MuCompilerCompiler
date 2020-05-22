@@ -47,7 +47,7 @@ public:
 	struct Item
 	{
 		// to get Productions in Production_Table
-		T nonterm;
+		T sym;
 		// to get certain production
 		int production_index;
 		// A->¦Á.B¦Â
@@ -55,18 +55,18 @@ public:
 
 		bool my_equals(const Item& obj) const
 		{
-			return (int)nonterm == (int)obj.nonterm
+			return (int)sym == (int)obj.sym
 				&& production_index == obj.production_index
 				&& point_pos == obj.point_pos;
 		}
 
 		bool operator < (const Item& rhs) const
 		{
-			if (nonterm < rhs.nonterm) return true;
-			if (nonterm == rhs.nonterm
+			if (sym < rhs.sym) return true;
+			if (sym == rhs.sym
 				&& production_index < rhs.production_index)
 				return true;
-			if (nonterm == rhs.nonterm
+			if (sym == rhs.sym
 				&& production_index == rhs.production_index
 				&& point_pos < rhs.point_pos)
 				return true;
@@ -118,11 +118,9 @@ public:
 	struct Action
 	{
 		ActionType type = ActionType::error;
-		union 
-		{
-			size_t aim_state = 0;
-			T nonterm;
-		};
+		size_t aim_state = 0;
+		T sym;
+		size_t production_index = 0;
 		size_t production_length = 0;
 	};
 
@@ -245,7 +243,7 @@ private:
 		bool& changed,
 		First_Table& first_table,
 		const Production_Table& production_table,
-		const T epsilon, const T sym);
+		const T epsilon, const T Sym);
 
 	// for certain A -> ¦ÁB¦Â
 	// beta_start_index>=length of production X->¦ÁB¦Â,means X -> ¦ÁB
@@ -303,10 +301,10 @@ typename SetHelper<T>::LL1_Table SetHelper<T>::Preanalysis(
 	auto int_end_nonterm = (int)epsilon - 1;
 	auto int_epsilon = (int)epsilon;
 	LL1_Table ret(int_end_nonterm + 1, std::vector<Production>(end_symbol - epsilon));
-	for (size_t nonterm = int_first_nonterm; nonterm < production_table.size(); ++nonterm)
+	for (size_t sym = int_first_nonterm; sym < production_table.size(); ++sym)
 	{
 		//A
-		for (const auto& production : production_table[nonterm])
+		for (const auto& production : production_table[sym])
 		{
 			bool has_epsilon = false;
 			//A -> ¦Á
@@ -326,7 +324,7 @@ typename SetHelper<T>::LL1_Table SetHelper<T>::Preanalysis(
 						continue;
 					}
 					auto column = term - epsilon - 1;
-					ret[nonterm][column] = production;
+					ret[sym][column] = production;
 				}
 				//once a Yj doesn't have int_epsilon , stop.  
 				if (!has_epsilon)
@@ -334,10 +332,10 @@ typename SetHelper<T>::LL1_Table SetHelper<T>::Preanalysis(
 			}
 			//if ¦Å belongs to FIRST(¦Á)
 			if (has_epsilon)
-				for (auto term : follow_table[nonterm])
+				for (auto term : follow_table[sym])
 				{
 					auto column = term - epsilon - 1;
-					ret[nonterm][column] = production;
+					ret[sym][column] = production;
 				}
 		}
 	}
@@ -355,7 +353,7 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::CLOSURE(
 	{
 		// for every core_item
 		const auto& production =
-			production_table[core_item.nonterm][core_item.production_index];
+			production_table[core_item.sym][core_item.production_index];
 		// if A -> ¦Á.a¦Â, discard.
 		if (core_item.point_pos >= production.size()
 			|| production[core_item.point_pos] >= epsilon)
@@ -399,7 +397,7 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 	{
 		// for every core_item
 		const auto& production =
-			production_table[core_item.nonterm][core_item.production_index];
+			production_table[core_item.sym][core_item.production_index];
 		if (core_item.point_pos < production.size()
 			// e.g. E->E.+T symbol = +
 			&& production[core_item.point_pos] == symbol
@@ -408,25 +406,25 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 		{
 			//e.g.  insert E->E+.T
 			//insert Item(initialized by list)
-			cores.insert({ (T)core_item.nonterm,core_item.production_index,core_item.point_pos + 1 });
+			cores.insert({ (T)core_item.sym,core_item.production_index,core_item.point_pos + 1 });
 		}
 
 	}
 	//for non_core_item
-	for (size_t nonterm = 0; nonterm < I.non_cores.size(); ++nonterm)
+	for (size_t sym = 0; sym < I.non_cores.size(); ++sym)
 	{
-		if (I.non_cores[nonterm])// if has CLOSURE(nonterm)
+		if (I.non_cores[sym])// if has CLOSURE(nonterm)
 			for (int production_index = 0;
-				production_index < production_table[nonterm].size();
+				production_index < production_table[sym].size();
 				++production_index)
 				if (// e.g. E->.T
-					production_table[nonterm][production_index][0] == symbol
+					production_table[sym][production_index][0] == symbol
 					// e.g. A->.¦Å
 					&& symbol != epsilon)
 				{
 					// e.g.  insert E->T.
 					// insert Item(initialized by list)
-					cores.insert({ (T)nonterm,production_index,1 });
+					cores.insert({ (T)sym,production_index,1 });
 				}
 	}
 	SimplifiedSetOfItems ret = CLOSURE(production_table, cores, epsilon, start);
@@ -467,11 +465,11 @@ SetHelper<T>::COLLECTION(const Production_Table& production_table, const T& epsi
 		iter = collection.size();
 		changed = false;
 		for (size_t i = start_pos; i < collection.size(); ++i)
-			for (int sym = 0; sym <= (int)end; ++sym)
+			for (int Sym = 0; Sym <= (int)end; ++Sym)
 			{
 				// for every symbol X
 				SimplifiedSetOfItems temp_I =
-					GOTO(production_table, collection[i], (T)sym, epsilon, start);
+					GOTO(production_table, collection[i], (T)Sym, epsilon, start);
 				bool inexist = true;
 				if (temp_I.cores.size())
 					for (int j = 0; j < collection.size(); ++j)
@@ -480,7 +478,7 @@ SetHelper<T>::COLLECTION(const Production_Table& production_table, const T& epsi
 						{
 							inexist = false;
 							// GOTO[state_i,symbol] -> state_j
-							table[{i, (T)sym}] = j;
+							table[{i, (T)Sym}] = j;
 							break;
 						}
 					}
@@ -492,7 +490,7 @@ SetHelper<T>::COLLECTION(const Production_Table& production_table, const T& epsi
 				if (inexist)
 				{
 					// generate a new state which is now the last elem of collection
-					table[{i, (T)sym}] = collection.size();
+					table[{i, (T)Sym}] = collection.size();
 					collection.push_back(temp_I);
 					changed = true;
 				}
@@ -516,8 +514,8 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 	auto int_start = (int)start;
 	for (const auto& item : goto_table)
 	{		
-		auto sym = std::get<1>(std::get<0>(item));
-		auto int_sym = (int)sym;
+		auto Sym = std::get<1>(std::get<0>(item));
+		auto int_sym = (int)Sym;
 		auto cur_state = std::get<0>(std::get<0>(item));
 		auto aim_state = std::get<1>(item);
 		// every certain goto in goto_table
@@ -529,8 +527,9 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 			a.type = ActionType::move_in;
 			// also record the next state to be moved into the stack
 			a.aim_state = aim_state;
+			a.sym = (T)int_sym;
 			a.production_length = 0;
-			ret[{cur_state, sym}] = std::move(a);
+			ret[{cur_state, Sym}] = std::move(a);
 		}
 	}
 	for (size_t i = 0; i < collection.size(); ++i)
@@ -539,29 +538,31 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 		for (const Item& core : collection[i].cores)
 		{
 			// every certain core
-			auto production_length = production_table[(int)core.nonterm][core.production_index].size();
+			auto production_length = production_table[(int)core.sym][core.production_index].size();
 			if (core.point_pos >= production_length)
 				// if the state is A->¦Á.
 			{
-				if (core.nonterm == start)
+				if (core.sym == start)
 					// if S'-> S.
 				{
 					// then ACTION[i,$] = accept
 					Action a;
 					a.type = ActionType::accept;
 					a.aim_state = 0;
+					a.production_index = core.production_index;
 					a.production_length = production_length;
 					ret[{i, end}] = std::move(a);
 				}
 				else
-					for (const auto& term : follow_table[(int)core.nonterm])
+					for (const auto& term : follow_table[(int)core.sym])
 					{
 						// then for every term a, in FOLLOW(A)
 						// ACTION[i,a] = reduce A->¦Á
 						Action a;
 						a.type = ActionType::reduce;
 						// also record the head of the production
-						a.nonterm = core.nonterm;
+						a.sym = core.sym;
+						a.production_index = core.production_index;
 						a.production_length = production_length;
 						ret[{i, term}] = std::move(a);
 					}
@@ -576,14 +577,14 @@ void SetHelper<T>::setup_first_table(
 	bool& changed,
 	First_Table& first_table,
 	const Production_Table& production_table,
-	const T epsilon, const T sym)
+	const T epsilon, const T Sym)
 {
-	auto int_sym = (int)sym;
+	auto int_sym = (int)Sym;
 	auto int_epsilon = (int)epsilon;
 	//for X -> a
 	if (int_sym >= int_epsilon)
 	{
-		if (first_table[sym].insert(sym).second)
+		if (first_table[Sym].insert(Sym).second)
 			changed = true;
 	}
 	else

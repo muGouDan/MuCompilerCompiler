@@ -157,6 +157,7 @@
     <ClCompile Include="Keyword.cpp" />
     <ClCompile Include="LogicalOperator.cpp" />
     <ClCompile Include="myCompiler.cpp" />
+    <ClCompile Include="RawString.cpp" />
     <ClCompile Include="RelationalOperator.cpp" />
     <ClCompile Include="Separator.cpp" />
     <ClCompile Include="SetHelper.cpp" />
@@ -170,6 +171,8 @@
     <ClInclude Include="Digit.h" />
     <ClInclude Include="Examples.h" />
     <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="RawString.h" />
+    <ClInclude Include="Syntax.h" />
     <ClInclude Include="SetHelper.h" />
     <ClInclude Include="Highlight.h" />
     <ClInclude Include="Identifier.h" />
@@ -185,6 +188,11 @@
     <Text Include="my_keyword.cfg" />
     <Text Include="parser_test.txt" />
     <Text Include="scanner_test.txt" />
+    <Text Include="syntax.txt" />
+    <Text Include="syntax_test.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="my_syntax.cfg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

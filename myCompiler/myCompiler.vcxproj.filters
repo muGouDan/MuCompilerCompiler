@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Parser">
       <UniqueIdentifier>{4f50c9ea-028a-44ea-a724-466aec22035d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utility">
+      <UniqueIdentifier>{88788759-c577-4ea4-8c75-e8d7dcd809e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="myCompiler.cpp">
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="SetHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RawString.cpp">
+      <Filter>Source Files\Scanner</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +131,12 @@
     <ClInclude Include="Examples.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Syntax.h">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="RawString.h">
+      <Filter>Header Files\Scanner</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="my_keyword.cfg" />
@@ -134,5 +146,10 @@
     <Text Include="parser_test.txt">
       <Filter>Test Files</Filter>
     </Text>
+    <Text Include="syntax_test.txt" />
+    <Text Include="syntax.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="my_syntax.cfg" />
   </ItemGroup>
 </Project>

@@ -34,10 +34,10 @@ bool Scanner::Identifier::Scann(char input, const size_t line_no, const size_t i
 			{
 				buffer_token.start = iter;			
 				char_buffer[char_iter++] = input;
-				state = ON;
+				state = HEAD;
 			}
 			break;
-		case ON:
+		case HEAD:
 			if (isalnum(input) || input == '_')
 			{
 				if (char_iter >= CHAR_BUFFER_MAX)

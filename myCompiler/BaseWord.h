@@ -24,7 +24,9 @@ namespace Scanner
 		identifier,
 		assign,
 		keyword,
-		separator
+		separator,
+		raw_string,
+		end_symbol
 	};
 
 	struct Token

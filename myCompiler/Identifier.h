@@ -7,11 +7,12 @@ namespace Scanner
 {
 	class Identifier :public BaseWord
 	{
-		const static size_t ON = 1;
+		const static size_t HEAD = 1;
 		char char_buffer[CHAR_BUFFER_MAX] = "\0";
 		size_t char_iter = 0;
 		std::vector<std::string> keywords;
 		std::string str_helper;
+		char last_input = '\0';
 		void LoadConfig();
 	public:
 		Identifier() :BaseWord(TokenType::identifier,ConsoleForegroundColor::enmCFC_White)

@@ -45,7 +45,7 @@ namespace Parser
 			if(!ready)
 				SetUpTable();
 		}
-		void Parse(std::vector<Scanner::Token>& token_set, size_t start);
+		void Parse(std::vector<Scanner::Token>& token_set_for_production, size_t start);
 	private:
 		enum symbol
 		{
@@ -65,12 +65,12 @@ namespace Parser
 			nil
 		};	
 		std::stack<symbol> parser_stack;
-		static constexpr int GetIndex(symbol sym)
+		static constexpr int GetIndex(symbol Sym)
 		{
-			if (sym < elem)
-				return sym;
+			if (Sym < elem)
+				return Sym;
 			else
-				return sym - elem;
+				return Sym - elem;
 		}	
 		static bool ready;
 		static Production table[ROW][COLUMN];

@@ -16,6 +16,7 @@ namespace Scanner
 		size_t char_iter = 0;
 		std::vector<std::string> keywords;
 		std::string str_helper;
+		char last_char = '\0';
 	public:
 		Digit():BaseWord(TokenType::digit,(ConsoleForegroundColor)6/*yellow*/)
 		{}

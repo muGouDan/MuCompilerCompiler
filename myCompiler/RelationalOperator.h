@@ -9,6 +9,7 @@ namespace Scanner
 		static const size_t SINGLE_GREATER = 2;
 		static const size_t SINGLE_EQ = 3;
 		static const size_t SINGLE_NE = 4;
+		char last_input = '\0';
 		void ResetCurrentToken()
 		{
 			current_token.name = "None";

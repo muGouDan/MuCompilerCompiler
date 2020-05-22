@@ -1,5 +1,5 @@
 #include "BaseWord.h"
-#define Case(element) case TokenType::##element: type_name = (#element); break
+#define Case(element) case element: type_name = #element; break
 namespace Scanner
 {
 	std::ostream& operator << (std::ostream& out, const Token& token)
@@ -7,15 +7,17 @@ namespace Scanner
 		std::string type_name;
 		switch (token.type)
 		{
-			Case(none);
-			Case(rel_op);
-			Case(log_op);
-			Case(arith_op);
-			Case(keyword);
-			Case(identifier);
-			Case(digit);
-			Case(assign);
-			Case(separator);
+			Case(TokenType::none);
+			Case(TokenType::rel_op);
+			Case(TokenType::log_op);
+			Case(TokenType::arith_op);
+			Case(TokenType::keyword);
+			Case(TokenType::identifier);
+			Case(TokenType::digit);
+			Case(TokenType::assign);
+			Case(TokenType::separator);
+			Case(TokenType::raw_string);
+			Case(TokenType::end_symbol);	
 		default:
 			break;
 		}

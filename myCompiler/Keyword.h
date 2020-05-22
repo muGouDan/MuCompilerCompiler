@@ -13,6 +13,8 @@ namespace Scanner
 		std::vector<Pair> pairs;
 		std::string str_helper;
 		size_t current_index;
+		bool str_ = false;
+		bool char_ = false;
 		void LoadConfig();
 		void RefleshPairs()
 		{
@@ -24,7 +26,7 @@ namespace Scanner
 			finished_amount = 0;
 			raw_valid = false;
 		}
-		const static size_t ON = 1;
+		const static size_t HEAD = 1;
 		const static size_t OFF = 2;
 		bool raw_valid = false;
 		size_t finished_amount = 0;

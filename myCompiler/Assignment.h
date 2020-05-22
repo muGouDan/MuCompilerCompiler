@@ -2,6 +2,7 @@
 #include "BaseWord.h"
 namespace Scanner
 {
+	// =
 	class Assignment :public BaseWord
 	{
 		static const size_t EQ = 1;
