@@ -4,7 +4,7 @@ Parser::Production Parser::ArithmeticExpression::table[ROW][COLUMN];
 
 bool Parser::ArithmeticExpression::ready = false;
 
-void Parser::ArithmeticExpression::Parse(std::vector<Scanner::Token>& token_set_for_production, size_t start)
+void Parser::ArithmeticExpression::Parse(std::vector<Scanner::Token>& token_set, size_t start)
 {
 	std::cout << "ArithmeticExpression Parser: Start" << std::endl;
 	//current terminator
@@ -19,7 +19,7 @@ void Parser::ArithmeticExpression::Parse(std::vector<Scanner::Token>& token_set_
 			std::cout << "ArithmeticExpression Parser: Success";
 			break;
 		}
-		current = GetTerm(token_set_for_production[i]);
+		current = GetTerm(token_set[i]);
 		if (current != symbol::none)
 		{
 			symbol top = parser_stack.top();
@@ -31,13 +31,13 @@ void Parser::ArithmeticExpression::Parse(std::vector<Scanner::Token>& token_set_
 			else if (top >= symbol::elem && top <= symbol::right_p)
 				//top is terminator but doesn't equal to current
 			{
-				std::cout << "terminator dismatch: \n" << token_set_for_production[i] << std::endl;
+				std::cout << "terminator dismatch: \n" << token_set[i] << std::endl;
 				break;
 			}
 			else if (!table[GetIndex(top)][GetIndex(current)].valid)
 			{
 				std::cout << table[GetIndex(top)][GetIndex(current)].message << " "
-					<< token_set_for_production[i] << std::endl;
+					<< token_set[i] << std::endl;
 				break;
 			}
 			else if (table[GetIndex(top)][GetIndex(current)].valid)

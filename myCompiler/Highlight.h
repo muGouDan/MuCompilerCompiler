@@ -41,7 +41,7 @@ enum ConsoleForegroundColor
 void SetConsoleColor(ConsoleForegroundColor foreColor = enmCFC_White, ConsoleBackGroundColor backColor = enmCBC_Black);
 
 template<typename Input,typename TokenSet>
-void Highlight(Input&& input, TokenSet&& token_set_for_production)
+void Highlight(Input&& input, TokenSet&& token_set)
 {
 	size_t token_iter = 0;
 	for (size_t i = 0; i < input.size(); i++)
@@ -52,27 +52,27 @@ void Highlight(Input&& input, TokenSet&& token_set_for_production)
 		bool over = false;
 		while (j < input[i].size())
 		{
-			if (token_iter >= token_set_for_production.size())
+			if (token_iter >= token_set.size())
 				over = true;
 			if (!over)
 			{		
-				if (token_set_for_production[token_iter].line == i
-					&& j <= token_set_for_production[token_iter].end
-					&& token_set_for_production[token_iter].start <= j)
+				if (token_set[token_iter].line == i
+					&& j <= token_set[token_iter].end
+					&& token_set[token_iter].start <= j)
 				{
-					SetConsoleColor(token_set_for_production[token_iter].color);
+					SetConsoleColor(token_set[token_iter].color);
 					std::cout << input[i][j];
 					++j;
 				}
-				else if (i == token_set_for_production[token_iter].line && j < token_set_for_production[token_iter].start
-					|| i < token_set_for_production[token_iter].line)
+				else if (i == token_set[token_iter].line && j < token_set[token_iter].start
+					|| i < token_set[token_iter].line)
 				{
 					SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
 					std::cout << input[i][j];
 					++j;
 				}
-				else if (i == token_set_for_production[token_iter].line && j > token_set_for_production[token_iter].end
-					|| i > token_set_for_production[token_iter].line)
+				else if (i == token_set[token_iter].line && j > token_set[token_iter].end
+					|| i > token_set[token_iter].line)
 				{
 					++token_iter;
 				}

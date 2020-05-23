@@ -1,0 +1,35 @@
+// first part:
+// to definite which kind of token 
+// can be transferred to which terminator
+id	->	identifier;
+id	->	digit;
+/* another way
+id	->	identifier;
+id	->	digit;
+pm	->	"+";
+pm	->	"-";
+md	->	"*";
+md	->	"/";
+*/
+$$
+// second part:
+// to write Productions
+E_	->	E;		{do_E_to_E_};
+E	->	E + T;	{do_plus};
+E	->	E - T;	{do_minus};
+E	->	T;		{do_E_to_T};
+T	->	T * F;	{do_multiply};
+T	->	T / F;	{do_divide};
+T	->	F;		{do_T_to_F};
+F	->	(E);	{do_compress};
+F	->	id;		{do_getid};
+/* another way's Production
+E_	->	E;		
+E	->	E pm T;	{do_plus_or_minus};
+E	->	T;	
+T	->	T md F;	{do_multiply_or_divide};
+T	->	F;		
+F	->	(E);	{do_compress};
+F	->	id;
+*/
+

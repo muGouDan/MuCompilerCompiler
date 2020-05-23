@@ -45,7 +45,7 @@ namespace Parser
 			if(!ready)
 				SetUpTable();
 		}
-		void Parse(std::vector<Scanner::Token>& token_set_for_production, size_t start);
+		void Parse(std::vector<Scanner::Token>& token_set, size_t start);
 	private:
 		enum symbol
 		{

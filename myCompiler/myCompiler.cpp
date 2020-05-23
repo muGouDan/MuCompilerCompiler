@@ -8,7 +8,8 @@
 #include "Parser.h"
 #include "SetHelper.h"
 #include "Examples.h"
-#include "Syntax.h"
+#include "SyntaxDirected.h"
+#include "SimpleCompiler.h"
 using namespace Scanner;
 using namespace Parser;
 Example::LR::symbol transfer(const Scanner::Token& token);
@@ -37,18 +38,23 @@ int main()
 	//	std::cout << token << std::endl;
 	//}
 	
-	{	
-		SLRParser<Example::LR::symbol> slr(
-			Example::LR::pro, Example::LR::id,Example::LR::end,
-			Example::LR::epsilon, Example::LR::E_);
-		std::cout << "\n\n\nHEAD Parse" << std::endl;
-		slr.Parse(token_set, transfer);
+	//{	
+	//	SLRParser<Example::LR::symbol> slr(
+	//		Example::LR::pro, Example::LR::id,Example::LR::end,
+	//		Example::LR::epsilon, Example::LR::E_);
+	//	std::cout << "\nHEAD Parse" << std::endl;
+	//	slr.Parse(token_set, transfer);
+	//	std::cout << std::endl;
 
+	//	SyntaxDirected syntax("my_syntax.cfg");
+	//	std::cout << "\nAuto Parse" << std::endl;
+	//	syntax.Parse(token_set);
+	//	std::cout << std::endl;
+	//}
 
-		SyntaxLoader syntax("my_syntax.cfg");
-		std::cout << "\n\n\nAuto Parse" << std::endl;
-		syntax.Parse(token_set);
-	}
+	SimpleCompiler myCompiler("my_syntax.syn");
+	std::cout << "\nAuto Parse" << std::endl;
+	myCompiler.Parse(token_set);
 }
 
 //T(*)(const Scanner::Token&);

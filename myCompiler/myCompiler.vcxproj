@@ -152,6 +152,7 @@
     <ClCompile Include="Assignment.cpp" />
     <ClCompile Include="BaseWord.cpp" />
     <ClCompile Include="Digit.cpp" />
+    <ClCompile Include="FileLoader.cpp" />
     <ClCompile Include="Highlight.cpp" />
     <ClCompile Include="Identifier.cpp" />
     <ClCompile Include="Keyword.cpp" />
@@ -159,9 +160,11 @@
     <ClCompile Include="myCompiler.cpp" />
     <ClCompile Include="RawString.cpp" />
     <ClCompile Include="RelationalOperator.cpp" />
+    <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="Separator.cpp" />
-    <ClCompile Include="SetHelper.cpp" />
+    <ClCompile Include="SimpleCompiler.cpp" />
     <ClCompile Include="SLRParser.cpp" />
+    <ClCompile Include="SyntaxDirected.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArithmeticExpression.h" />
@@ -172,7 +175,8 @@
     <ClInclude Include="Examples.h" />
     <ClInclude Include="FileLoader.h" />
     <ClInclude Include="RawString.h" />
-    <ClInclude Include="Syntax.h" />
+    <ClInclude Include="SimpleCompiler.h" />
+    <ClInclude Include="SyntaxDirected.h" />
     <ClInclude Include="SetHelper.h" />
     <ClInclude Include="Highlight.h" />
     <ClInclude Include="Identifier.h" />
@@ -193,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="my_syntax.cfg" />
+    <None Include="my_syntax.syn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

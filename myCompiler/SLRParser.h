@@ -3,7 +3,7 @@
 #include "BaseWord.h"
 #include <stack>
 #include <vector>
-#define SLR_Debug
+//#define SLR_Debug
 template<typename T>
 class SLRParser
 {
@@ -23,8 +23,9 @@ class SLRParser
 	Goto_Table goto_table;
 	Action_Table action_table;
 	size_t token_pointer;
-
 public:
+	std::string information;
+
 	SLRParser() :
 		token_pointer(0)
 	{}
@@ -59,16 +60,21 @@ public:
 			epsilon, end_symbol, first);
 		state_stack.push(0);
 	}
-	void Parse(const Token_Set& token_set_for_production, Transfer_Func trans_func);
+	bool Parse(const Token_Set& token_set, Transfer_Func trans_func);
 	
-	//void(syntax_action)(Parent*, size_t nonterm, size_t pro_index, size_t token_iter)
+	//void(semantic_action)(Parent*, size_t nonterm, size_t pro_index, size_t token_iter)
 	template<typename Parent>
-	void Parse(const Token_Set& token_set_for_production, Transfer_Func trans_func,
-		void(syntax_action)(Parent*, size_t, size_t, size_t), Parent* ptr);
+	bool Parse(const Token_Set& token_set, Transfer_Func trans_func,
+		void(semantic_action)(Parent*, size_t, size_t, size_t), Parent* ptr);
 
 	template<typename Parent>
-	void Parse(const Token_Set& token_set_for_production,
+	bool Parse(const Token_Set& token_set,
 		T(trans_func)(Parent*, const Scanner::Token&), Parent* ptr);
+
+	template<typename Parent>
+	bool Parse(const Token_Set& token_set, 
+		T(trans_func)(Parent*, const Scanner::Token&),
+		void(semantic_action)(Parent*, size_t, size_t, size_t), Parent* ptr);
 };
 
 template<typename T>
@@ -94,19 +100,20 @@ SLRParser<T>::SLRParser(
 }
 
 template<typename T>
-void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Func trans_func)
+bool SLRParser<T>::Parse(const Token_Set& token_set, Transfer_Func trans_func)
 {
-	auto len = token_set_for_production.size();
+	auto len = token_set.size();
 	size_t iter = 0;
 	bool on = true;
+	bool acc = false;
 	while (on)
 	{
-		if (iter >= token_set_for_production.size())
+		if (iter >= token_set.size())
 		{
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(token_set_for_production[iter]);
+		T input = trans_func(token_set[iter]);
 		auto action_iter = action_table.find({ state_stack.top(),input });
 		if (action_table.find({ state_stack.top(),input }) != action_table.end())
 		{
@@ -136,9 +143,8 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Fun
 			}
 			case ActionType::accept:
 				on = false;
-#ifdef SLR_Debug
-				std::cout << "Accept" << std::endl;
-#endif // SLR_Debug
+				std::cout << information << ":SLRParser Accept" << std::endl;
+				acc = true;
 				break;
 			default:
 				assert("Fatal Error!");
@@ -147,32 +153,34 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Fun
 		}
 		else
 		{
-			std::cout << "Error Parse:\n"
-				<< "Stack Top: " << state_stack.top() << "\n" 
-				<< token_set_for_production[iter] << std::endl;
+			std::cout << information << ":SLRParser Error" << std::endl;
+			std::cout << "Stack Top: " << state_stack.top() << "\n" 
+				<< token_set[iter] << std::endl;
 			break;
 		}
 	}
+	return acc;
 }
 
 
 
 template<typename T>
 template<typename Parent>
-void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Func trans_func, 
-	void(syntax_action)(Parent*,size_t,size_t,size_t),Parent* ptr)
+bool SLRParser<T>::Parse(const Token_Set& token_set, Transfer_Func trans_func, 
+	void(semantic_action)(Parent*,size_t,size_t,size_t),Parent* ptr)
 {
-	auto len = token_set_for_production.size();
+	auto len = token_set.size();
 	size_t iter = 0;
 	bool on = true;
+	bool acc = false;
 	while (on)
 	{
-		if (iter >= token_set_for_production.size())
+		if (iter >= token_set.size())
 		{
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(token_set_for_production[iter]);
+		T input = trans_func(token_set[iter]);
 		auto action_iter = action_table.find({ state_stack.top(),input });
 		if (action_table.find({ state_stack.top(),input }) != action_table.end())
 		{
@@ -198,14 +206,13 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Fun
 					<< "\tpop amount: " << action.production_length
 					<< " push state: " << goto_state << std::endl;
 #endif // SLR_Debug
-				syntax_action(ptr, (size_t)action.sym, action.production_index, iter - 1);
+				semantic_action(ptr, (size_t)action.sym, action.production_index, iter - 1);
 				break;
 			}
 			case ActionType::accept:
 				on = false;
-#ifdef SLR_Debug
-				std::cout << "Accept" << std::endl;
-#endif // SLR_Debug
+				std::cout << information << ":SLRParser Accept" << std::endl;
+				acc = true;
 				break;
 			default:
 				assert("Fatal Error!");
@@ -214,30 +221,32 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production, Transfer_Fun
 		}
 		else
 		{
-			std::cout << "Error Parse:\n"
-				<< "Stack Top: " << state_stack.top() << "\n"
-				<< token_set_for_production[iter] << std::endl;
+			std::cout << information << ":SLRParser Error" << std::endl;
+			std::cout << "Stack Top: " << state_stack.top() << "\n"
+				<< token_set[iter] << std::endl;
 			break;
 		}
 	}
+	return acc;
 }
 
 template<typename T>
 template<typename Parent>
-void SLRParser<T>::Parse(const Token_Set& token_set_for_production,
+bool SLRParser<T>::Parse(const Token_Set& token_set,
 	T(trans_func)(Parent*, const Scanner::Token&), Parent* ptr)
 {
-	auto len = token_set_for_production.size();
+	auto len = token_set.size();
 	size_t iter = 0;
 	bool on = true;
+	bool acc = false;
 	while (on)
 	{
-		if (iter >= token_set_for_production.size())
+		if (iter >= token_set.size())
 		{
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(ptr,token_set_for_production[iter]);
+		T input = trans_func(ptr,token_set[iter]);
 		auto action_iter = action_table.find({ state_stack.top(),input });
 		if (action_table.find({ state_stack.top(),input }) != action_table.end())
 		{
@@ -267,9 +276,8 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production,
 			}
 			case ActionType::accept:
 				on = false;
-#ifdef SLR_Debug
-				std::cout << "Accept" << std::endl;
-#endif // SLR_Debug
+				std::cout << information << ":SLRParser Accept" << std::endl;
+				acc = true;
 				break;
 			default:
 				assert("Fatal Error!");
@@ -278,10 +286,80 @@ void SLRParser<T>::Parse(const Token_Set& token_set_for_production,
 		}
 		else
 		{
-			std::cout << "Error Parse:\n"
-				<< "Stack Top: " << state_stack.top() << "\n"
-				<< token_set_for_production[iter] << std::endl;
+			std::cout << information << ":SLRParser Error" << std::endl;
+			std::cout << "Stack Top: " << state_stack.top() << "\n"
+				<< token_set[iter] << std::endl;
 			break;
 		}
 	}
+	return acc;
+}
+
+template<typename T>
+template<typename Parent>
+bool SLRParser<T>::Parse(const Token_Set& token_set, 
+	T(trans_func)(Parent*, const Scanner::Token&), 
+	void(semantic_action)(Parent*, size_t, size_t, size_t), Parent* ptr)
+{
+	auto len = token_set.size();
+	size_t top_token_iter = 0;
+	size_t iter = 0;
+	bool on = true;
+	bool acc = false;
+	while (on)
+	{
+		if (iter >= token_set.size())
+		{
+			std::cout << "tokens run out without a End_Separator" << std::endl;
+			break;
+		}
+		T input = trans_func(ptr,token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input });
+		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		{
+			auto& action = std::get<1>(*action_iter);
+			switch (action.type)
+			{
+			case ActionType::move_in:
+				state_stack.push(action.aim_state);
+				top_token_iter = iter;
+				++iter;
+#ifdef SLR_Debug
+				std::cout << "move_in state:" << action.aim_state
+					<< " term: " << action.sym << std::endl;
+#endif // SLR_Debug
+				break;
+			case ActionType::reduce:
+			{
+				for (size_t i = 0; i < action.production_length; i++)
+					state_stack.pop();
+				auto goto_state = goto_table[{state_stack.top(), action.sym}];
+				state_stack.push(goto_state);
+#ifdef SLR_Debug
+				std::cout << "reduce: nonterm" << action.sym << "\n"
+					<< "\tpop amount: " << action.production_length
+					<< " push state: " << goto_state << std::endl;
+#endif // SLR_Debug
+				semantic_action(ptr, (size_t)action.sym, action.production_index, top_token_iter);
+				break;
+			}
+			case ActionType::accept:
+				on = false;
+				std::cout << information << ":SLRParser Accept" << std::endl;
+				acc = true;
+				break;
+			default:
+				assert("Fatal Error!");
+				break;
+			}
+		}
+		else
+		{
+			std::cout << information << ":SLRParser Error" << std::endl;
+			std::cout << "Stack Top: " << state_stack.top() << "\n"
+				<< token_set[iter] << std::endl;
+			break;
+		}
+	}
+	return acc;
 }
