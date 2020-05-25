@@ -1,6 +1,6 @@
 #include "RawString.h"
 
-bool Scanner::RawString::Scann(char input, const size_t line_no, const size_t iter)
+bool Scanner::RawString::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
 	token_valid = false;
 	switch (state)

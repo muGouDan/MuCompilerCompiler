@@ -1,7 +1,7 @@
 #include "LogicalOperator.h"
 
 // << >> ! && || & |
-bool Scanner::LogicalOperator::Scann(char input, const size_t line_no, const size_t iter)
+bool Scanner::LogicalOperator::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
 	token_valid = false;
 	bool roll_back = true;

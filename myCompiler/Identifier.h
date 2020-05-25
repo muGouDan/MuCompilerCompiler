@@ -19,7 +19,7 @@ namespace Scanner
 		{
 			LoadConfig();
 		}
-		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
+		virtual bool Scann(char input, const size_t line_no, const size_t iter,char next) override;
 	};
 }
 

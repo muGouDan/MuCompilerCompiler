@@ -22,6 +22,7 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<std::string>& input)
 		do
 		{
 			c = str[iter];
+			auto next = c == '\0' ? '\0' : str[iter + 1];
 			if (c == '/')
 			{
 				// for "//" comment
@@ -50,47 +51,19 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<std::string>& input)
 				++iter;
 				continue;
 			}
-			if (raw_string.Scann(c, line, iter))
-			{
-				token_set.push_back(raw_string.current_token);
-			}
-			if (raw_string.YetNotStart())
-			{
-				if (digit.Scann(c, line, iter))
-				{
-					token_set.push_back(digit.current_token);
-				}
-				if (assign.Scann(c, line, iter))
-				{
-					token_set.push_back(assign.current_token);
-				}
-				if (keyword.Scann(c, line, iter))
-				{
-					token_set.push_back(keyword.current_token);
-				}
-				if (identifier.Scann(c, line, iter))
-				{
-					token_set.push_back(identifier.current_token);
-				}
-				if (RelOp.Scann(c, line, iter))
-				{
-					token_set.push_back(RelOp.current_token);
-				}
-				if (LogOp.Scann(c, line, iter))
-				{
-					token_set.push_back(LogOp.current_token);
-				}
-				if (arithOp.Scann(c, line, iter))
-				{
-					token_set.push_back(arithOp.current_token);
-				}
-				//last to do: sparator 
-				if (separator.Scann(c, line, iter))
-				{
-					token_set.push_back(separator.current_token);
-				}
-			}
-			++iter;
+			if (raw_string.Scann(c, line, iter, next)) token_set.push_back(raw_string.current_token);
+			if (!raw_string.YetNotStart()) c = '\0';
+			if (digit.Scann(c, line, iter, next)) token_set.push_back(digit.current_token);
+			if (assign.Scann(c, line, iter, next)) token_set.push_back(assign.current_token);
+			if (keyword.Scann(c, line, iter, next)) token_set.push_back(keyword.current_token);
+			if (identifier.Scann(c, line, iter, next)) token_set.push_back(identifier.current_token);
+			if (RelOp.Scann(c, line, iter, next)) token_set.push_back(RelOp.current_token);
+			if (LogOp.Scann(c, line, iter, next)) token_set.push_back(LogOp.current_token);
+			if (arithOp.Scann(c, line, iter, next))token_set.push_back(arithOp.current_token);
+			// last to do: sparator 
+			if (separator.Scann(c, line, iter, next)) token_set.push_back(separator.current_token);
+			// recover the char.
+			c = str[iter++];
 		} while (c != '\0');
 
 		if (skip)

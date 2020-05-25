@@ -19,7 +19,7 @@ void Scanner::Keyword::LoadConfig()
 	fs.close();
 }
 
-bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter)
+bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
 	if (input == '\"') str_ = !str_;
 	else if (input == '\'') char_ = !char_;

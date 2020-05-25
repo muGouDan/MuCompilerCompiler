@@ -23,7 +23,7 @@ namespace Scanner
 		RelationalOperator() :BaseWord(TokenType::rel_op,ConsoleForegroundColor::enmCFC_Cyan)
 		{}
 		//virtual ParseResult Parse(const char* line_src, Token& token, const size_t& line_no, const size_t& start) override;
-		virtual bool Scann(char input, const size_t line_no, const size_t iter) override;
+		virtual bool Scann(char input, const size_t line_no, const size_t iter,char next) override;
 	};
 }
 

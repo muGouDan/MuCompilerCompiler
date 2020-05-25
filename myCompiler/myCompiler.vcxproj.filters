@@ -34,9 +34,6 @@
     <ClCompile Include="ArithmeticExpression.cpp">
       <Filter>Parser</Filter>
     </ClCompile>
-    <ClCompile Include="SLRParser.cpp">
-      <Filter>Parser</Filter>
-    </ClCompile>
     <ClCompile Include="ArithmeticOperator.cpp">
       <Filter>Scanner</Filter>
     </ClCompile>
@@ -71,14 +68,17 @@
     <ClCompile Include="Scanner.cpp">
       <Filter>Scanner</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleCompiler.cpp">
-      <Filter>CostumerCode</Filter>
-    </ClCompile>
     <ClCompile Include="SyntaxDirected.cpp">
       <Filter>AutoSyntax</Filter>
     </ClCompile>
     <ClCompile Include="Highlight.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="CalculatorCompiler.cpp">
+      <Filter>CostumerCode</Filter>
+    </ClCompile>
+    <ClCompile Include="ExampleCompiler.cpp">
+      <Filter>CostumerCode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,14 +133,17 @@
     <ClInclude Include="Examples.h">
       <Filter>Examples</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleCompiler.h">
-      <Filter>CostumerCode</Filter>
-    </ClInclude>
     <ClInclude Include="SyntaxDirected.h">
       <Filter>AutoSyntax</Filter>
     </ClInclude>
     <ClInclude Include="Highlight.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="CalculatorCompiler.h">
+      <Filter>CostumerCode</Filter>
+    </ClInclude>
+    <ClInclude Include="ExampleCompiler.h">
+      <Filter>CostumerCode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -161,9 +164,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="my_syntax.cfg">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="my_syntax.syn">
       <Filter>Resource Files</Filter>
     </None>

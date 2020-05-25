@@ -120,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +153,7 @@
     <ClCompile Include="Assignment.cpp" />
     <ClCompile Include="BaseWord.cpp" />
     <ClCompile Include="Digit.cpp" />
+    <ClCompile Include="ExampleCompiler.cpp" />
     <ClCompile Include="FileLoader.cpp" />
     <ClCompile Include="Highlight.cpp" />
     <ClCompile Include="Identifier.cpp" />
@@ -162,8 +164,7 @@
     <ClCompile Include="RelationalOperator.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="Separator.cpp" />
-    <ClCompile Include="SimpleCompiler.cpp" />
-    <ClCompile Include="SLRParser.cpp" />
+    <ClCompile Include="CalculatorCompiler.cpp" />
     <ClCompile Include="SyntaxDirected.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,10 +173,11 @@
     <ClInclude Include="Assignment.h" />
     <ClInclude Include="BaseWord.h" />
     <ClInclude Include="Digit.h" />
+    <ClInclude Include="ExampleCompiler.h" />
     <ClInclude Include="Examples.h" />
     <ClInclude Include="FileLoader.h" />
     <ClInclude Include="RawString.h" />
-    <ClInclude Include="SimpleCompiler.h" />
+    <ClInclude Include="CalculatorCompiler.h" />
     <ClInclude Include="SyntaxDirected.h" />
     <ClInclude Include="SetHelper.h" />
     <ClInclude Include="Highlight.h" />
@@ -196,7 +198,6 @@
     <Text Include="syntax_test.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="my_syntax.cfg" />
     <None Include="my_syntax.syn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -9,7 +9,7 @@
 #include "SetHelper.h"
 #include "Examples.h"
 #include "SyntaxDirected.h"
-#include "SimpleCompiler.h"
+#include "CalculatorCompiler.h"
 using namespace Scanner;
 using namespace Parser;
 Example::LR::symbol transfer(const Scanner::Token& token);

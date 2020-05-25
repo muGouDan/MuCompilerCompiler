@@ -127,12 +127,13 @@ SyntaxDirected::SyntaxDirected(std::string path) :
 	auto& production_input = inputs[1];
 	token_set_for_definition = EasyScanner(definition_input);
 	token_set_for_production = EasyScanner(production_input);
+#ifdef HIGH_LIGHT
 	std::cout << "SyntaxLoader:" << std::endl;
 	std::cout << "Definition:" << std::endl;
 	Highlight(definition_input, token_set_for_definition);
 	std::cout << "Production:" << std::endl;
 	Highlight(production_input, token_set_for_production);
-
+#endif // HIGH_LIGHT
 	// Setup Candidates
 	for (size_t i = 0; i < token_set_for_definition.size() / 4; ++i)
 	{
@@ -190,3 +191,4 @@ SyntaxDirected::SyntaxDirected(std::string path) :
 			quick_candidates.push_back({ Scanner::TokenType::none,sym.first,sym.second });
 }
 
+SyntaxDirected::Sealed::~Sealed(){}

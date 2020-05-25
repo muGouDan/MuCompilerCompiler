@@ -88,7 +88,7 @@ namespace Scanner
 		Token current_token;
 		size_t state = START;
 		virtual ~BaseWord() {}
-		virtual bool Scann(char input, const size_t line_no, const size_t iter) = 0;
+		virtual bool Scann(char input, const size_t line_no, const size_t iter,const char next = '\0') = 0;
 		/*****Something May HELP***
 		token_valid = false;
 		bool roll_back = true;

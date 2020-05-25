@@ -1,6 +1,6 @@
 #include "ArithmeticOperator.h"
 
-bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const size_t iter)
+bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
 	token_valid = false;
 	bool roll_back = true;
@@ -17,8 +17,15 @@ bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const 
 				CompleteTokenAndSwap("+", line_no, iter);
 				break;
 			case '-':
-				buffer_token.start = iter;
-				state = MINUS;
+				if (next != '>')
+				{
+					buffer_token.start = iter;
+					CompleteTokenAndSwap("-", line_no, iter);
+				}
+				else
+				{
+					state = START;
+				}
 				break;
 			case '*':
 				buffer_token.start = iter;
@@ -40,12 +47,6 @@ bool Scanner::ArithmeticOperator::Scann(char input, const size_t line_no, const 
 				state = START;
 				break;
 			}
-			break;
-		case MINUS:
-			if (input != '>')
-				CompleteTokenAndSwap("-", line_no, iter - 1);
-			else
-				state = START;
 			break;
 		default:
 			throw(std::logic_error("no such state"));

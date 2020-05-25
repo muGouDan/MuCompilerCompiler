@@ -14,7 +14,7 @@ md	->	"/";
 $$
 // second part:
 // to write Productions
-E_	->	E;		{do_E_to_E_};
+E_	->	E;		{do_E__to_E};
 E	->	E + T;	{do_plus};
 E	->	E - T;	{do_minus};
 E	->	T;		{do_E_to_T};

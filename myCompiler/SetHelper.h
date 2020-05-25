@@ -154,7 +154,7 @@ public:
 			size_t flag = 0;
 			for (size_t j = 0; j < table[i].size(); ++j)
 			{
-				for (size_t num = flag; num < j; ++num)
+				for (size_t C = flag; C < j; ++C)
 				{
 					std::cout << "\t\t";
 				}
@@ -549,6 +549,7 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 					Action a;
 					a.type = ActionType::accept;
 					a.aim_state = 0;
+					a.sym = start;
 					a.production_index = core.production_index;
 					a.production_length = production_length;
 					ret[{i, end}] = std::move(a);

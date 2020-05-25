@@ -10,9 +10,25 @@
 #include "SLRParser.h"
 #define SELECT_TOKENTYPE(token_type_name,type,element) if(token_type_name==#element) type = Scanner::TokenType::element; else
 #define END_SELECT ;
-#define AddAction(action) AddSemanticAction(#action,action) 
-#define Initialization FinishSemanticActionTable()
+
+#define INPUT						SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set
+#define TokenSet					token_set
+#define TokenIter					token_iter
+#define CurrentToken				token_set[token_iter]
+#define Base						base
+
+#define GetThis(type)				dynamic_cast<type*>(base)	
+#define AddAction(action)			AddSemanticAction(#action,action) 
+#define Initialization				FinishSemanticActionTable()
+#define GetValue(Type,index)		(*(Type*)(input[index]))		
+#define PassOn(index)				input[index]
+#define Create(Type,...)			MakeStorage(base,Type(__VA_ARGS__))
+#define CreateAs(Type,expr)			MakeStorage<Type>(base,expr)
+#define CreateFrom(expr)			MakeStorage(base,expr)
 //#define SYNTAX_ACTION_DEBUG
+//#define HIGH_LIGHT
+
+
 class SyntaxDirected
 {
 public:
@@ -77,7 +93,6 @@ private:
 	//Get Body
 	static void SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter);
 #pragma endregion
-
 	Sym start = 0;
 	Sym epsilon = 0;
 	Sym end = 0;
@@ -105,9 +120,12 @@ private:
 	};
 	std::map<std::string,InfoPair> statements;
 	// find statement with (nonterm,pro_index)
-	std::vector<std::vector<void(*)(size_t,const Token_Set&)>> quick_semantic_action_table;
-	static void No_Action(size_t, const Token_Set&){}
-	std::map<std::string, void(*)(size_t, const Token_Set&)> initial_semantic_action_table;
+	std::vector<std::vector<void*(*)(SyntaxDirected* base, std::vector<void*>,size_t,const Token_Set&)>> quick_semantic_action_table;
+	static void* No_Action(SyntaxDirected*, std::vector<void*>, size_t, const Token_Set&)
+	{
+		return nullptr;
+	}
+	std::map<std::string, void*(*)(SyntaxDirected* base, std::vector<void*>, size_t, const Token_Set&)> initial_semantic_action_table;
 	// Candidate and Quick_Candidate are used to tell which Token will be transfered to which terminator
 	// e.g. TokenType::identifier -> id || TokenType::digit -> id || Token.name == ")" -> )
 	struct Candidate
@@ -126,20 +144,62 @@ private:
 	std::vector<Candidate> candidates;
 	std::vector<Quick_Candidate> quick_candidates;
 	static Sym TransferForDefinition(SyntaxDirected* ptr, const Scanner::Token& token);
-	static void SemanticActionDispatcher(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+	static void* SemanticActionDispatcher(
+		SyntaxDirected* ptr, std::vector<void*> input, 
+		size_t nonterm, size_t pro_index, size_t token_iter)
 	{
-		ptr->quick_semantic_action_table[nonterm][pro_index](token_iter, *ptr->token_set);
+		return ptr->quick_semantic_action_table[nonterm][pro_index](ptr,input,token_iter, *ptr->token_set);
 	}
 public:
 	SyntaxDirected(std::string path);
 
-	void Parse(const Token_Set& token_set)
+	bool Parse(const Token_Set& token_set)
 	{
 		this->token_set = &token_set;
-		slr_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher, this);
+		return slr_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher,this);
+	}
+
+	~SyntaxDirected()
+	{
+		while (!to_delete.empty())
+		{
+			delete to_delete.top();
+			to_delete.pop();
+		}
 	}
 #pragma region Semantic Actions
+private:
+		struct Sealed
+		{
+			void* ptr = nullptr;
+			virtual ~Sealed();
+		};
+
+		template<typename T>
+		struct SealedValue :public Sealed
+		{
+			using Type = T;
+			SealedValue(T val) :value(new T(val))
+			{
+				ptr = value;
+			}
+			T* value;
+			virtual ~SealedValue()
+			{
+				delete value;
+			}
+		};
 protected:
+	std::stack<Sealed*> to_delete;
+
+	template<typename T>
+	static T* MakeStorage(SyntaxDirected* ptr, T obj)
+	{
+		auto temp = new SealedValue<T>(obj);
+		ptr->to_delete.push(temp);
+		return temp->value;
+	}
+
 	void FinishSemanticActionTable()
 	{
 		slr_parser.SetUp(production_table, end - 1, end, epsilon, start);
@@ -160,7 +220,7 @@ protected:
 		SetConsoleColor();
 	}
 
-	void AddSemanticAction(const char* statement_label, void(action)(size_t, const Token_Set&))
+	void AddSemanticAction(const char* statement_label, void* (action)(SyntaxDirected* base, std::vector<void*>, size_t, const Token_Set&))
 	{
 		initial_semantic_action_table[statement_label] = action;
 	}
