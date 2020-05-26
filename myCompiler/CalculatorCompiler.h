@@ -1,6 +1,6 @@
 #pragma once
 #include "SyntaxDirected.h"
-class SimpleCompiler:public SyntaxDirected
+class SimpleCompiler:public SyntaxDirected<SimpleCompiler>
 {
 	struct Id
 	{
@@ -29,7 +29,7 @@ public:
 		AddAction(do_compress);
 		AddAction(do_getid);
 	}
-	static void* do_E__to_E(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_E__to_E(INPUT)
 	{
 		std::cout << "result:" << std::endl;
 		const auto& res = GetValue(Id, 0);
@@ -55,11 +55,11 @@ public:
 			
 		return nullptr;
 	}
-	static void* do_E_to_T(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_E_to_T(INPUT)
 	{
 		return PassOn(0);
 	}
-	static void* do_plus(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_plus(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -108,7 +108,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_minus(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_minus(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -157,7 +157,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_multiply(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_multiply(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -196,7 +196,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_divide(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_divide(INPUT)
 	{	
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -235,11 +235,11 @@ public:
 		}
 		return res;
 	}
-	static void* do_T_to_F(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_T_to_F(INPUT)
 	{
 		return PassOn(0);
 	}
-	static void* do_compress(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_compress(INPUT)
 	{
 		const auto& value = GetValue(Id, 1);
 		auto res = Create(Id);
@@ -262,7 +262,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_getid(SyntaxDirected* base, std::vector<void*> input, size_t token_iter, const Token_Set& token_set)
+	static void* do_getid(INPUT)
 	{
 		auto res = Create(Id);
 		if (token_set[token_iter].type == Scanner::TokenType::digit)

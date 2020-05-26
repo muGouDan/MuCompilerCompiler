@@ -1,10 +1,8 @@
 #pragma once
 #include "SyntaxDirected.h"
 
-class ExampleCompiler :public SyntaxDirected
+class ExampleCompiler :public SyntaxDirected<ExampleCompiler>
 {
-private:
-	using ThisType = ExampleCompiler;
 public:
 	ExampleCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
@@ -70,9 +68,8 @@ public:
 
 	static void* ExampleAction4(INPUT)
 	{
-		auto data_ptr = GetThis(ExampleCompiler);
-		auto data_ptr_1 = This;
-		return data_ptr;
+		auto data = CreateFrom(This->myData.size());
+		return data;
 	}
 };
 
