@@ -1,13 +1,10 @@
 #pragma once
 #include "SyntaxDirected.h"
-#define This GetThis(ExampleCompiler)
+
 class ExampleCompiler :public SyntaxDirected
 {
-	struct MyData
-	{
-		// data you want to pass
-	};
-	std::vector<MyData> myData;
+private:
+	using ThisType = ExampleCompiler;
 public:
 	ExampleCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
@@ -18,8 +15,14 @@ public:
 		AddAction(ExampleAction1);
 		AddAction(ExampleAction2);
 		AddAction(ExampleAction3);
+		AddAction(ExampleAction4);
 	}
 
+	struct MyData
+	{
+		// data you want to pass
+	};
+	std::vector<MyData> myData;
 
 	static void* ExampleAction1(INPUT)
 	{
@@ -39,7 +42,7 @@ public:
 		int a = 1;
 		auto create_from1 = CreateFrom(a);
 
-		// to create a new object from expression but you can do
+		// to create a new object copy from expression but you can do
 		// some convert if allowed
 		auto create_as = CreateAs(double, value2 + value3);
 

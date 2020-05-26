@@ -17,7 +17,8 @@
 #define CurrentToken				token_set[token_iter]
 #define Base						base
 
-#define GetThis(type)				dynamic_cast<type*>(base)	
+#define GetThis(type)				dynamic_cast<type*>(base)
+#define This						GetThis(ThisType)
 #define AddAction(action)			AddSemanticAction(#action,action) 
 #define Initialization				FinishSemanticActionTable()
 #define GetValue(Type,index)		(*(Type*)(input[index]))		
