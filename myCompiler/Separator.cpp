@@ -52,7 +52,7 @@ bool Scanner::Separator::Scann(char input, const size_t line_no, const size_t it
 		if (input == ':')
 			CompleteTokenAndSwap("::", line_no, iter);
 		else
-			state = START;
+			CompleteTokenAndSwap(":", line_no, iter);
 		break;
 	case SINGLE_MINUS:
 		if (input == '>')

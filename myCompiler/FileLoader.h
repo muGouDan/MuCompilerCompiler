@@ -3,6 +3,11 @@
 #include <vector>
 #include <fstream>
 
-std::vector<std::string> FileLoader(std::string path);
+struct LineContent
+{
+	std::string content;
+	size_t line_no;
+};
+std::vector<LineContent> FileLoader(std::string path);
 
-std::vector<std::vector<std::string>> FileLoader(std::string path, std::string separator);
+std::vector<std::vector<LineContent>> FileLoader(std::string path, std::string separator);

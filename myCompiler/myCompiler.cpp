@@ -11,6 +11,7 @@
 #include "SyntaxDirected.h"
 #include "CalculatorCompiler.h"
 #include "ExampleCompiler.h"
+#include "DefinitionCompiler.h"
 using namespace Scanner;
 using namespace Parser;
 Example::LR::symbol transfer(const Scanner::Token& token);
@@ -24,7 +25,7 @@ int main()
 	std::cout << "Input:" << std::endl;
 	for (size_t i = 0; i < input.size(); i++)
 	{
-		std::cout << "[" << std::to_string(i) << "\t]" << input[i] << std::endl;
+		std::cout << "[" << std::to_string(input[i].line_no) << "\t]" << input[i].content << std::endl;
 	}
 	std::cout << "Scanner:" << std::endl;
 	std::vector<Token> token_set = EasyScanner(input);
@@ -53,9 +54,11 @@ int main()
 	//	std::cout << std::endl;
 	//}
 
-	SimpleCompiler myCompiler("my_syntax.syn");
-	std::cout << "\nAuto Parse" << std::endl;
+	CalculatorCompiler myCompiler("my_syntax.syn");
 	myCompiler.Parse(token_set);
+
+	std::cout << "\n" << std::endl;
+	TestCompiler tcompiler("complete_syntax.syn");
 }
 
 //T(*)(const Scanner::Token&);

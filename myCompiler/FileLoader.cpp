@@ -1,35 +1,38 @@
 #include "FileLoader.h"
 
-std::vector<std::string> FileLoader(std::string path)
+std::vector<LineContent> FileLoader(std::string path)
 {
-	std::vector<std::string> lines;
+	std::vector<LineContent> lineContent;
+	size_t line_no = 1;
 	std::ifstream fs(path);
 	char container[1024];
 	while (fs.getline(container, 1024))
 	{
-		lines.push_back(std::string(container));
+		lineContent.push_back({ std::string(container),line_no++ });
 	}
 	fs.close();
-	return lines;
+	return lineContent;
 }
 
-std::vector<std::vector<std::string>> FileLoader(std::string path, std::string separator)
+std::vector<std::vector<LineContent>> FileLoader(std::string path, std::string separator)
 {
 	size_t iter = 0;
-	std::vector<std::vector<std::string>> inputs;
-	inputs.push_back(std::vector<std::string>());
+	std::vector<std::vector<LineContent>> inputs;
+	inputs.push_back(std::vector<LineContent>());
 	std::ifstream fs(path);
 	char container[1024];
+	size_t line_no = 1;
 	while (fs.getline(container, 1024))
 	{
-		std::string str(container);
-		if (str == separator)
+		LineContent line_content = {container,line_no};
+		if (line_content.content == separator)
 		{
-			inputs.push_back(std::vector<std::string>());
+			inputs.push_back(std::vector<LineContent>());
 			++iter;
 		}
 		else
-			inputs[iter].push_back(str);
+			inputs[iter].push_back(line_content);
+		++line_no;
 	}
 	fs.close();
 	return inputs;

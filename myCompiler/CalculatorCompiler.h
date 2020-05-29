@@ -1,6 +1,6 @@
 #pragma once
 #include "SyntaxDirected.h"
-class SimpleCompiler:public SyntaxDirected<SimpleCompiler>
+class CalculatorCompiler:public SyntaxDirected<CalculatorCompiler>
 {
 	struct Id
 	{
@@ -11,7 +11,7 @@ class SimpleCompiler:public SyntaxDirected<SimpleCompiler>
 		std::string name;
 	};
 public:
-	SimpleCompiler(std::string cfg_path):SyntaxDirected(cfg_path)
+	CalculatorCompiler(std::string cfg_path):SyntaxDirected(cfg_path)
 	{
 		Initialization;
 	}

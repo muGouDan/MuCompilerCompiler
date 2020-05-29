@@ -165,13 +165,13 @@
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="Separator.cpp" />
     <ClCompile Include="CalculatorCompiler.cpp" />
-    <ClCompile Include="SyntaxDirected.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArithmeticExpression.h" />
     <ClInclude Include="ArithmeticOperator.h" />
     <ClInclude Include="Assignment.h" />
     <ClInclude Include="BaseWord.h" />
+    <ClInclude Include="DefinitionCompiler.h" />
     <ClInclude Include="Digit.h" />
     <ClInclude Include="ExampleCompiler.h" />
     <ClInclude Include="Examples.h" />
@@ -198,6 +198,9 @@
     <Text Include="syntax_test.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="complete_syntax.syn" />
+    <None Include="control_syntax.syn" />
+    <None Include="definition_syntax.syn" />
     <None Include="my_syntax.syn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

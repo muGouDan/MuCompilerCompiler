@@ -21,9 +21,6 @@ void Scanner::Keyword::LoadConfig()
 
 bool Scanner::Keyword::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
-	if (input == '\"') str_ = !str_;
-	else if (input == '\'') char_ = !char_;
-	if (char_ || str_) return false;
 	for (auto& pair : pairs)
 	{
 		if (std::get<1>(pair) == OFF)

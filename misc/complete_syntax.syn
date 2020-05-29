@@ -1,0 +1,48 @@
+/* Definition Syntax
+ * 	using bTy  = baseType
+ */
+bTy		->	"int";
+bTy		->	"float";
+bTy		->	"bool";
+bTy		->	"char";
+record  ->	"struct";
+num     ->  digit;
+id		->	identifier;
+$$
+/* Definition Syntax
+ * 	using Def  = Definition
+ * 	using Ty   = Type
+ * 	using Cmp  = Component
+ */
+_Definition:
+Def		-> 	Ty id ";" Def;				
+Def		->	epsilon;					
+Ty		->	bTy Cmp;					
+Ty		->	record "{" Def "}";	
+Cmp		->	epsilon;					
+Cmp		->	"["num"]" Cmp;				
+/* Controll Syntax
+ * 	using Stmt  = Statement
+ * 	using BlEx  = BooleanExpression
+ */
+_Controll:
+Stmt	->	"if" ( BlEx ) Stmt;				
+Stmt	->	"if" ( BlEx ) Stmt "else" Stmt;	
+Stmt	->	"while" ( BlEx ) Stmt;			
+Stmt	->	Stmt ";" Stmt;				
+Stmt	->	assign;						
+/* Expression Syntax
+ * 	using Exp   = Expression
+ * 	using Tpl   = Tuple
+ *	using Fn	= Final
+ */
+_Expression: 
+Exp	->	Exp + Tpl;						{do_plus};
+Exp	->	Exp - Tpl;						{do_minus};
+Exp	->	Tpl;							{do_Exp_from_Tpl};
+Tpl	->	Tpl * Fn;						{do_multiply};
+Tpl	->	Tpl / Fn;						{do_divide};
+Tpl	->	Fn;								{do_Tpl_from_Fn};
+Fn	->	( Exp );						{do_compress};
+Fn	->	id;								{do_getid};
+Fn	->	num;							{do_getid};

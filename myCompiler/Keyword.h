@@ -13,8 +13,6 @@ namespace Scanner
 		std::vector<Pair> pairs;
 		std::string str_helper;
 		size_t current_index;
-		bool str_ = false;
-		bool char_ = false;
 		void LoadConfig();
 		void RefleshPairs()
 		{

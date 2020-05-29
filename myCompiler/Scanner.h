@@ -11,5 +11,5 @@
 #include "Assignment.h"
 #include "Separator.h"
 #include "RawString.h"
-
-std::vector<Scanner::Token> EasyScanner(const std::vector<std::string>& input);
+#include "FileLoader.h"
+std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input);
