@@ -157,6 +157,8 @@
     <ClCompile Include="FileLoader.cpp" />
     <ClCompile Include="Highlight.cpp" />
     <ClCompile Include="Identifier.cpp" />
+    <ClCompile Include="ILGenerator.cpp" />
+    <ClCompile Include="ILSymbolTable.cpp" />
     <ClCompile Include="Keyword.cpp" />
     <ClCompile Include="LogicalOperator.cpp" />
     <ClCompile Include="myCompiler.cpp" />
@@ -176,6 +178,8 @@
     <ClInclude Include="ExampleCompiler.h" />
     <ClInclude Include="Examples.h" />
     <ClInclude Include="FileLoader.h" />
+    <ClInclude Include="ILGenerator.h" />
+    <ClInclude Include="ILSymbolTable.h" />
     <ClInclude Include="RawString.h" />
     <ClInclude Include="CalculatorCompiler.h" />
     <ClInclude Include="SyntaxDirected.h" />
@@ -191,11 +195,13 @@
     <ClInclude Include="SLRParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="definition_test.txt" />
     <Text Include="my_keyword.cfg" />
     <Text Include="parser_test.txt" />
     <Text Include="scanner_test.txt" />
     <Text Include="syntax.txt" />
     <Text Include="syntax_test.txt" />
+    <Text Include="test_syn.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="complete_syntax.syn" />

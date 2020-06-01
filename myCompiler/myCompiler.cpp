@@ -11,7 +11,7 @@
 #include "SyntaxDirected.h"
 #include "CalculatorCompiler.h"
 #include "ExampleCompiler.h"
-#include "DefinitionCompiler.h"
+#include "ILGenerator.h"
 using namespace Scanner;
 using namespace Parser;
 Example::LR::symbol transfer(const Scanner::Token& token);
@@ -32,61 +32,16 @@ int main()
 	token_set.push_back(Token{ TokenType::end_symbol });
 	Highlight(input, token_set);
 
-	//ArithmeticExpression arithmeticExpression;
-	//arithmeticExpression.Parse(token_set, 0);
+	//CalculatorCompiler myCompiler("my_syntax.syn");
+	//myCompiler.Parse(token_set);
 
-	//for (auto token : token_set)
-	//{
-	//	std::cout << token << std::endl;
-	//}
-	
-	//{	
-	//	SLRParser<Example::LR::symbol> slr(
-	//		Example::LR::pro, Example::LR::id,Example::LR::end,
-	//		Example::LR::epsilon, Example::LR::E_);
-	//	std::cout << "\nHEAD Parse" << std::endl;
-	//	slr.Parse(token_set, transfer);
-	//	std::cout << std::endl;
-
-	//	SyntaxDirected syntax("my_syntax.cfg");
-	//	std::cout << "\nAuto Parse" << std::endl;
-	//	syntax.Parse(token_set);
-	//	std::cout << std::endl;
-	//}
-
-	CalculatorCompiler myCompiler("my_syntax.syn");
-	myCompiler.Parse(token_set);
-
+	auto input_def = FileLoader("definition_test.txt");
+	auto def_token_set = EasyScanner(input_def);
+	def_token_set.push_back(Token{ TokenType::end_symbol });
 	std::cout << "\n" << std::endl;
-	TestCompiler tcompiler("complete_syntax.syn");
-}
+	ILGenerator iLgenerator("complete_syntax.syn");
+	iLgenerator.Parse(def_token_set);
+	iLgenerator.ShowTables();
 
-//T(*)(const Scanner::Token&);
-Example::LR::symbol transfer(const Scanner::Token& token)
-{
-	Example::LR::symbol ret = Example::LR::symbol::none;
-	switch (token.type)
-	{
-	case Scanner::TokenType::identifier:
-	case Scanner::TokenType::digit:
-		ret = Example::LR::symbol::id;
-		break;
-	case Scanner::TokenType::arith_op:
-		if (token.name == "+" || token.name == "-")
-			ret = Example::LR::symbol::plus;
-		else if (token.name == "*" || token.name == "/")
-			ret = Example::LR::symbol::mul;
-		else if (token.name == "(")
-			ret = Example::LR::symbol::lp;
-		else if (token.name == ")")
-			ret = Example::LR::symbol::rp;
-		break;
-	case Scanner::TokenType::end_symbol:
-		ret = Example::LR::symbol::end;
-		break;
-	default:
-		ret = Example::LR::symbol::none;
-		break;
-	}
-	return ret;
+	//TestCompiler tCompiler("test_syn.txt");
 }

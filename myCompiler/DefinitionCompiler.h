@@ -6,7 +6,7 @@ class DefinitionCompiler :public SyntaxDirected<DefinitionCompiler>
 public:
 	DefinitionCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
-		Initialization;
+		Initialization();
 	}
 	virtual void SetupSemanticActionTable() override
 	{

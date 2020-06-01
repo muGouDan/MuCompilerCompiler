@@ -6,7 +6,7 @@ class ExampleCompiler :public SyntaxDirected<ExampleCompiler>
 public:
 	ExampleCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
-		Initialization;
+		Initialization();
 	}
 	virtual void SetupSemanticActionTable() override
 	{
@@ -68,7 +68,7 @@ public:
 
 	static void* ExampleAction4(INPUT)
 	{
-		auto data = CreateFrom(This->myData.size());
+		auto data = CreateFrom(_this->myData.size());
 		return data;
 	}
 };

@@ -9,6 +9,7 @@ enum class ActionType
 	error = -1,
 	accept,
 	move_in,
+	move_epsilon,
 	reduce
 };
 
@@ -417,10 +418,8 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 			for (int production_index = 0;
 				production_index < production_table[sym].size();
 				++production_index)
-				if (// e.g. E->.T
-					production_table[sym][production_index][0] == symbol
-					// e.g. A->.¦Å
-					&& symbol != epsilon)
+				if (// e.g. E->.T  A->.¦Å
+					production_table[sym][production_index][0] == symbol)
 				{
 					// e.g.  insert E->T.
 					// insert Item(initialized by list)
@@ -519,7 +518,7 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 		auto cur_state = std::get<0>(std::get<0>(item));
 		auto aim_state = std::get<1>(item);
 		// every certain goto in goto_table
-		if (int_sym >= int_epsilon && int_sym < int_end)
+		if (int_sym > int_epsilon && int_sym < int_end)
 			// if the state is A->¦Á.a¦Â, a is a term
 		{
 			// then ACTION[i,a] = move in a
@@ -529,7 +528,35 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 			a.aim_state = aim_state;
 			a.sym = (T)int_sym;
 			a.production_length = 0;
+			auto iter = ret.find({ cur_state, Sym });
+			if (iter != ret.end())
+				if (a.type != iter->second.type
+					|| a.sym != iter->second.sym)
+					throw std::logic_error("Confliction");
 			ret[{cur_state, Sym}] = std::move(a);
+		}
+		else if (int_sym == int_epsilon)
+		{
+			for (size_t i = 0; i < collection[cur_state].non_cores.size();++i)
+				if (collection[cur_state].non_cores[i])
+					for (const auto& pro : production_table[i])
+						if (pro[0] == epsilon)
+							for (const auto& term : follow_table[i])
+							{
+								Action a;
+								a.type = ActionType::move_epsilon;
+								// also record the next state to be moved into the stack
+								a.aim_state = aim_state;
+								a.sym = (T)int_sym;
+								a.production_length = 0;
+								auto iter = ret.find({ cur_state, Sym });
+								if (iter != ret.end())
+									if(a.type != iter->second.type 
+										|| a.sym != iter->second.sym 
+										|| a.production_index!= iter->second.production_index)
+									throw std::logic_error("Confliction");
+								ret[{cur_state, term}] = std::move(a);
+							}
 		}
 	}
 	for (size_t i = 0; i < collection.size(); ++i)
@@ -565,6 +592,8 @@ typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
 						a.sym = core.sym;
 						a.production_index = core.production_index;
 						a.production_length = production_length;
+						if (ret.count({ i, term }))
+							throw std::logic_error("Confliction");
 						ret[{i, term}] = std::move(a);
 					}
 			}

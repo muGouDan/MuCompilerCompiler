@@ -13,25 +13,25 @@
 //#define SYNTAX_ACTION_DEBUG
 //#define SHOW_CATCHED_VAR
 //#define HIGH_LIGHT
-
+#define SHOW_PARSE_PROCESS
 
 #define SELECT_TOKENTYPE(token_type_name,type,element) if(token_type_name==#element) type = Scanner::TokenType::element; else
 #define END_SELECT ;
 
-#define INPUT						Type* ptr, std::vector<void*> input, size_t token_iter, const Token_Set& token_set
+#define INPUT						Type* _this, std::vector<void*> input, size_t token_iter, const Token_Set& token_set
 #define TokenSet					token_set
 #define TokenIter					token_iter
-#define CurrentToken				token_set[token_iter]
+#define CurrentToken				(token_set[token_iter])
 
-#define This						ptr
+#define This						_this
 #define AddAction(action)			AddSemanticAction(#action,action) 
-#define Initialization				FinishSemanticActionTable()
+#define Initialization			    CompleteSemanticActionTable
 #define GetValue(Type,index)		(*(Type*)(input[index]))		
+#define GetPtr(Type,index)			((Type*)(input[index]))		
 #define PassOn(index)				input[index]
-#define Create(Type,...)			MakeStorage(ptr,Type(__VA_ARGS__))
-#define CreateAs(Type,expr)			MakeStorage<Type>(ptr,expr)
-#define CreateFrom(expr)			MakeStorage(ptr,expr)
-
+#define Create(Type,...)			MakeStorage(_this,new Type(__VA_ARGS__))
+#define CreateAs(Type,expr)			MakeStorage<Type>(_this,new Type(expr))
+#define CreateFrom(expr)			MakeStorageFrom(_this,expr)
 
 struct Sealed
 {
@@ -47,6 +47,10 @@ struct SealedValue :public Sealed
 	{
 		ptr = value;
 	}
+	SealedValue(T* obj_ptr) :value(obj_ptr)
+	{
+		ptr = obj_ptr;
+	}
 	T* value;
 	virtual ~SealedValue()
 	{
@@ -57,10 +61,11 @@ struct SealedValue :public Sealed
 template<typename T>
 class SyntaxDirected
 {
-protected:
-	using Type = T;
 public:
 	using Token_Set = std::vector<Scanner::Token>;
+	using Token = Scanner::Token;
+protected:
+	using Type = T;
 private:
 	using Sym = size_t;
 	// A -> ¦Á
@@ -76,24 +81,27 @@ private:
 	enum Syntax_Symbol
 	{
 		ss_none = -1,
-		Whole_,
+		WholeOrNone_,
+		WholeOrNone,
 		Whole,
 		LabeledPro,
 		Pro,
 		Head,
 		Body,
 		IDs,
+		ID,
 		Statement,
 		ActionLabel,
 		ScopeLabel,
 
 		ss_epsilon,
 		ss_sym,
-		axis, //->
-		le,//{ 
-		re,//}
-		semi,//;
-		colon,//:
+		axis,	//->
+		le,		//{ 
+		re,		//}
+		semi,	//;
+		colon,	//:
+		point,	//.
 		ss_end
 	};
 	SLRParser<Syntax_Symbol> slr_parser_for_syntax;
@@ -107,6 +115,7 @@ private:
 			else if (token.name == "}") return re;
 			else if (token.name == ";") return semi;
 			else if (token.name == ":") return colon;
+			else if (token.name == ".") return point;
 			else return ss_sym;
 		}
 		else if (token.type == Scanner::TokenType::end_symbol)
@@ -132,24 +141,18 @@ private:
 	struct Production_Flag
 	{
 		Sym head;
-		size_t start;
-		size_t production_length = 0;
+		std::vector<std::string> names_in_body;
 	};
-	std::vector<Production_Flag> flags;
 	Production_Flag current_flag;
+	std::string current_name;
 	const Token_Set* token_set;
 	Production_Table production_table;
-	std::string scope_label = "Untitled";
+	std::string scope_label = "_Global";
 	size_t part = 0;
-	std::string ScopedName(std::string name)
-	{
-		if (name != "epsilon")
-			return scope_label + "." + name;
-		else
-			return name;
-	}
+	bool scope_on = true;
 	std::string ScopedName(const Scanner::Token& token)
 	{
+		if (!scope_on) return token.name;
 		if (part == 0) return token.name;
 		std::string name = scope_label + "." + token.name;
 		if (part == 2 && !heads.count(name))
@@ -203,6 +206,16 @@ private:
 		SyntaxDirected* ptr, std::vector<void*> input,
 		size_t nonterm, size_t pro_index, size_t token_iter)
 	{
+#ifdef SHOW_PARSE_PROCESS
+		std::cout << ptr->sym_table[nonterm] << " -> ";
+		for (const auto& sym : ptr->production_table[nonterm][pro_index])
+			std::cout << ptr-> sym_table[sym] << " ";
+		std::cout << "(" << (*ptr->token_set)[token_iter].name << ")"<< std::endl;
+		for (auto item : ptr->initial_semantic_action_table)
+			if(item.second == ptr->quick_semantic_action_table[nonterm][pro_index])
+				std::cout << "Semantic Action:" << item.first <<"<"
+				<< item.second << ">"<< std::endl;
+#endif //SHOW_PARSE_PROCESS
 		return ptr->quick_semantic_action_table[nonterm][pro_index](ptr->derive_ptr, input, token_iter, *ptr->token_set);
 	}
 public:
@@ -222,19 +235,28 @@ public:
 			to_delete.pop();
 		}
 	}
-#pragma region Semantic Actions
+
+#pragma region For Custom Code 
 protected:
-	std::stack<Sealed*> to_delete;
+	//Easy GC in Semantic Action
+	template<typename T>
+	static T* MakeStorage(SyntaxDirected* ptr, T* obj_ptr)
+	{
+		auto temp = new SealedValue<T>(obj_ptr);
+		ptr->to_delete.push(temp);
+		return temp->value;
+	}
 
 	template<typename T>
-	static T* MakeStorage(SyntaxDirected* ptr, T obj)
+	static T* MakeStorageFrom(SyntaxDirected* ptr, T obj)
 	{
 		auto temp = new SealedValue<T>(obj);
 		ptr->to_delete.push(temp);
 		return temp->value;
 	}
 
-	void FinishSemanticActionTable()
+	// Semantic Actions Setup
+	void CompleteSemanticActionTable()
 	{
 		slr_parser.SetUp(production_table, end - 1, end, epsilon, start);
 		SetupSemanticActionTable();
@@ -261,8 +283,8 @@ protected:
 
 private:
 	Type* derive_ptr;
+	std::stack<Sealed*> to_delete;
 #pragma endregion
-
 };
 
 class TestCompiler :public SyntaxDirected<TestCompiler>
@@ -270,7 +292,7 @@ class TestCompiler :public SyntaxDirected<TestCompiler>
 public:
 	TestCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
-		Initialization;
+		Initialization();
 	}
 };
 
@@ -282,7 +304,7 @@ void SyntaxDirected<T>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm
 {
 	switch (nonterm)
 	{
-	case Head:
+	case Head:// Head -> ID
 	{
 #ifdef SEMANTIC_CHECK
 		if (ptr->token_set_for_production[token_iter].name[0] >= 'a' && ptr->token_set_for_production[token_iter].name[0] <= 'z')
@@ -309,72 +331,71 @@ void SyntaxDirected<T>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm
 			std::cout << "[Pro -> Head axis Body Statement]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 		break;
+	case ID:
+		if (pro_index == 0)
+			//ID -> ss_sym
+			ptr->scope_on = true;
+		else
+			//ID -> ss_sym.ss_sym
+			ptr->scope_on = false;
+		break;
 	case ScopeLabel:
-		ptr->scope_label = ptr->token_set_for_production[token_iter-1].name;
+		ptr->scope_label = ptr->token_set_for_production[token_iter - 1].name;
 #ifdef SYNTAX_ACTION_DEBUG
 		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_production[token_iter - 1] << std::endl;
 #endif
 		break;
 	default:
 		break;
-}
+	}
 }
 
 template<typename T>
 void SyntaxDirected<T>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
-	
+
 	switch (nonterm)
 	{
 	case Head:
 	{
 		std::string name = ptr->ScopedName(ptr->token_set_for_production[token_iter]);
 		ptr->current_flag.head = ptr->record[name];
-	}	
+	}
 	break;
-	case IDs:
-	{
-		if (pro_index == 1)// IDs->ss_sym
+	case ID:
+		if (pro_index == 0)
+			//ID -> ss_sym
 		{
-			ptr->current_flag.start = token_iter;
-			ptr->current_flag.production_length = 1;
-#ifdef SYNTAX_ACTION_DEBUG
-			std::cout << "[IDs -> ss_sym]\n" << ptr->token_set_for_production[token_iter] << std::endl;
-#endif
+			ptr->scope_on = true;
+			ptr->current_name = ptr->ScopedName(ptr->token_set_for_production[token_iter]);
 		}
 		else
+			//ID -> ss_sym.ss_sym
 		{
-			++ptr->current_flag.production_length;
-#ifdef SYNTAX_ACTION_DEBUG
-			std::cout << "[IDs -> IDs ss_sym]\n" << ptr->token_set_for_production[token_iter] << std::endl;
-#endif
+			ptr->scope_on = false;
+			ptr->current_name = ptr->token_set_for_production[token_iter - 2].name + "."
+				+ ptr->token_set_for_production[token_iter].name;
 		}
-		// if identifier, add the scope label
-		std::string name = ptr->ScopedName(ptr->token_set_for_production[token_iter]);
-		if (!ptr->record.count(name))
+		break;
+	case IDs:
+	{
+		ptr->current_flag.names_in_body.push_back(ptr->current_name);
+		if (!ptr->record.count(ptr->current_name))
 		{
-			if (ptr->heads.count(name))
-				//if is Head(nonterm)
-			{
-				ptr->sym_table.push_back(name);
-				ptr->record.insert({ name,ptr->sym_table.size() - 1 });
-			}
-			else
-				//if is term
-			{
-				ptr->sym_table.push_back(
-					ptr->token_set_for_production[token_iter].name);
-				ptr->record.insert({ ptr->token_set_for_production[token_iter].name,ptr->sym_table.size() - 1 });
-			}
+			ptr->sym_table.push_back(ptr->current_name);
+			ptr->record.insert({ ptr->current_name,ptr->sym_table.size() - 1 });
 		}
 	}
 	break;
 	case Body:
 	{
 		Production production;
-		for (size_t i = ptr->current_flag.start;
-			i < ptr->current_flag.start + ptr->current_flag.production_length; ++i)
-			production.push_back(ptr->record[ptr->ScopedName(ptr->token_set_for_production[i])]);
+		//for (size_t i = ptr->current_flag.start;
+		//	i < ptr->current_flag.start + ptr->current_flag.production_length; ++i)
+		//	production.push_back(ptr->record[ptr->ScopedName(ptr->token_set_for_production[i])]);
+		for (const auto& name : ptr->current_flag.names_in_body)
+			production.push_back(ptr->record[name]);
+		ptr->current_flag.names_in_body.clear();
 		ptr->production_table[ptr->current_flag.head].push_back(std::move(production));
 		ptr->quick_semantic_action_table[ptr->current_flag.head].push_back(No_Action);
 #ifdef SYNTAX_ACTION_DEBUG
@@ -386,21 +407,21 @@ void SyntaxDirected<T>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm
 	{
 		std::string name = ptr->token_set_for_production[token_iter].name;
 		ptr->statements.insert(
-		{
-			name,
-			{	
-				ptr->current_flag.head,
-				ptr->production_table[ptr->current_flag.head].size() - 1
-			}
-		});
+			{
+				name,
+				{
+					ptr->current_flag.head,
+					ptr->production_table[ptr->current_flag.head].size() - 1
+				}
+			});
 
 	}
 #ifdef SYNTAX_ACTION_DEBUG
-		std::cout << "[ActionLabel]:\n" << ptr->token_set_for_production[token_iter] << std::endl;
+	std::cout << "[ActionLabel]:\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 	break;
 	case ScopeLabel:
-		ptr->scope_label = ptr->token_set_for_production[token_iter-1].name;
+		ptr->scope_label = ptr->token_set_for_production[token_iter - 1].name;
 #ifdef SYNTAX_ACTION_DEBUG
 		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_production[token_iter - 1] << std::endl;
 #endif
@@ -434,7 +455,7 @@ void SyntaxDirected<T>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t
 #ifdef SEMANTIC_CHECK
 		if (ptr->token_set_for_definition[token_iter].name[0] >= 'A'
 			&& ptr->token_set_for_definition[token_iter].name[0] <= 'Z')
-			std::cout <<  "[Semantic Check]:\n[" << ptr->token_set_for_definition[token_iter] <<
+			std::cout << "[Semantic Check]:\n[" << ptr->token_set_for_definition[token_iter] <<
 			"] starts with big letter,but is recognized as term" << std::endl;
 #endif // CHECK_ON
 		ptr->candidate_flag.sym_name = ptr->token_set_for_definition[token_iter].name;
@@ -459,27 +480,29 @@ void SyntaxDirected<T>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t
 #ifdef SYNTAX_ACTION_DEBUG
 			std::cout << "[IDs -> ss_sym]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
-			}
+		}
 		else
 			throw(std::logic_error("Too Much IDs"));
 		break;
 	case ScopeLabel:
-		ptr->scope_label = ptr->token_set_for_definition[token_iter-1].name;
+		ptr->scope_label = ptr->token_set_for_definition[token_iter - 1].name;
 #ifdef SYNTAX_ACTION_DEBUG
-		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_definition[token_iter-1] << std::endl;
+		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_definition[token_iter - 1] << std::endl;
 #endif
 		break;
 	default:
 		break;
-		}
 	}
+}
 
 template<typename T>
 SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	syntax_production_table(
 		{
-			//Whole_ -> Whole
-			{{Whole}},
+			//Whole_ -> WholeOrNone
+			{{WholeOrNone}},
+			//WholeOrNone -> Whole | epsilon
+			{{Whole},{ss_epsilon}},
 			//Whole -> Whole LabeledPro | LabeledPro
 			{{Whole,LabeledPro},{LabeledPro}},
 			//LabeledPro -> ScopeLabel Pro
@@ -487,11 +510,13 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 			//Pro -> Head "->" Body | Head "->" Body Statement
 			{{Head,axis,Body},{Head,axis,Body,Statement}},
 			//Head -> ss_sym
-			{{ss_sym}},
+			{{ID}},
 			//Body -> IDs;
 			{{IDs,semi}},
-			//IDs -> IDs ss_sym | ss_sym
-			{{IDs,ss_sym},{ss_sym}},
+			//IDs -> IDs ID | ID
+			{{IDs,ID},{ID}},
+			//ID -> ss_sym | ss_sym.ss_sym 
+			{{ss_sym},{ss_sym,point,ss_sym}},
 			//Statement -> { ss_sym };
 			{{le,ActionLabel,re,semi}},
 			//ActionLabel
@@ -501,7 +526,7 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 		})
 {
 	derive_ptr = (Type*)this;
-	slr_parser_for_syntax.SetUp(syntax_production_table, (Syntax_Symbol)(ss_end - 1), ss_end, ss_epsilon, Whole_);
+	slr_parser_for_syntax.SetUp(syntax_production_table, (Syntax_Symbol)(ss_end - 1), ss_end, ss_epsilon, WholeOrNone_);
 	//slr_parser_for_definition.SetUp(definition_production_table,(Syntax_Symbol)(ss_end-1),ss_end,ss_epsilon,Whole_);
 	auto inputs = FileLoader(path, "$$");
 	auto& definition_input = inputs[0];
@@ -526,6 +551,7 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	// Setup Candidates
 	if (!slr_parser_for_syntax.Parse(token_set_for_definition, TransferForSyntax, SyntaxAction_SetUpDefinition, this))
 		throw std::exception("Syntax Config: Syntax Mistakes, check the first part of your syntax config text");
+	slr_parser_for_syntax.Reset();
 #ifdef SHOW_CATCHED_VAR
 	std::cout << "Catched Candidates(term):" << std::endl;
 	for (const auto& candidate : candidates)
@@ -533,14 +559,14 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 		<< "[type: " << candidate.type << "]"
 		"[name:\" " << candidate.name << "\"]" << std::endl;
 #endif // SHOW_CATCHED_VAR
-	
+
 	slr_parser_for_syntax.information = "[Second Part Parse:<" + type_name + "> Head]";
 	part = 1;
 	// Get nonterm
-	scope_label = "Untitled";
+	scope_label = "_Global";
 	if (!slr_parser_for_syntax.Parse(token_set_for_production, TransferForSyntax, SyntaxAction_SetHead, this))
 		throw std::exception("Syntax Config: Syntax Mistakes, check the second part of your syntax config text");
-
+	slr_parser_for_syntax.Reset();
 	// set the size of production_table,cause all nonterms have been recognized 
 	production_table.resize(sym_table.size());
 	quick_semantic_action_table.resize(sym_table.size());
@@ -553,13 +579,13 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	for (size_t i = 0; i < sym_table.size() - 1; ++i)
 	{
 		std::cout << i << " : " << sym_table[i] << std::endl;
-	}	
+	}
 #endif // SHOW_CATCHED_VAR
 
 	slr_parser_for_syntax.information = "[Second Part Parse:<" + type_name + "> Body]";
 	part = 2;
 	// Get term
-	scope_label = "Untitled";
+	scope_label = "_Global";
 	slr_parser_for_syntax.Parse(token_set_for_production, TransferForSyntax, SyntaxAction_SetBody, this);
 	end = sym_table.size();
 	sym_table.push_back("$");
@@ -574,10 +600,10 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 #ifdef SHOW_CATCHED_VAR
 	std::cout << "Catched ActionNames:" << std::endl;
 	for (const auto& item : statements)
-		std::cout << item.first << " : " << sym_table[item.second.nonterm] 
-		<< " -> Index[" << item.second.pro_index <<"]" << std::endl;
+		std::cout << item.first << " : " << sym_table[item.second.nonterm]
+		<< " -> Index[" << item.second.pro_index << "]" << std::endl;
 #endif // SHOW_CATCHED_VAR
-	
+
 	std::cout << "[Syntax Parse:<" << type_name << ">] SUCCEED" << std::endl;
 	// Set Quick Candidates with the help of Candidates
 
@@ -610,8 +636,8 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	std::cout << "Info: if your nonterm has been catched as candidate" << std::endl;
 	std::cout << "that may because your nonterm doesn't have any ProductionBody" << std::endl;
 	for (const auto& candidate : quick_candidates)
-		std::cout <<"\""<<sym_table[candidate.sym] << "\"" 
-		<<"("<< candidate.sym <<")" << " -> "
+		std::cout << "\"" << sym_table[candidate.sym] << "\""
+		<< "(" << candidate.sym << ")" << " -> "
 		"[name:\" " << candidate.name << "\"]" << std::endl;
 #endif // SHOW_CATCHED_VAR
 }

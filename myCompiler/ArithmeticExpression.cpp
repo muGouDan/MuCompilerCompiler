@@ -22,30 +22,30 @@ void Parser::ArithmeticExpression::Parse(std::vector<Scanner::Token>& token_set,
 		current = GetTerm(token_set[i]);
 		if (current != symbol::none)
 		{
-			symbol top = parser_stack.top();
-			if (top == current)//
+			symbol var_top = parser_stack.top();
+			if (var_top == current)//
 			{
 				parser_stack.pop();
 				++i;
 			}
-			else if (top >= symbol::elem && top <= symbol::right_p)
+			else if (var_top >= symbol::elem && var_top <= symbol::right_p)
 				//top is terminator but doesn't equal to current
 			{
 				std::cout << "terminator dismatch: \n" << token_set[i] << std::endl;
 				break;
 			}
-			else if (!table[GetIndex(top)][GetIndex(current)].valid)
+			else if (!table[GetIndex(var_top)][GetIndex(current)].valid)
 			{
-				std::cout << table[GetIndex(top)][GetIndex(current)].message << " "
+				std::cout << table[GetIndex(var_top)][GetIndex(current)].message << " "
 					<< token_set[i] << std::endl;
 				break;
 			}
-			else if (table[GetIndex(top)][GetIndex(current)].valid)
+			else if (table[GetIndex(var_top)][GetIndex(current)].valid)
 			{
 				parser_stack.pop();
-				for (int i = table[GetIndex(top)][GetIndex(current)].production.size() - 1; i >=0; --i)
+				for (int i = table[GetIndex(var_top)][GetIndex(current)].production.size() - 1; i >=0; --i)
 				{
-					auto& Sym = table[GetIndex(top)][GetIndex(current)].production[i];
+					auto& Sym = table[GetIndex(var_top)][GetIndex(current)].production[i];
 					if (Sym != nil)
 					{
 						parser_stack.push((symbol)Sym);

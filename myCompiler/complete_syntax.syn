@@ -1,48 +1,43 @@
-/* Definition Syntax
- * 	using bTy  = baseType
- */
 bTy		->	"int";
 bTy		->	"float";
-bTy		->	"bool";
 bTy		->	"char";
-record  ->	"struct";
-num     ->  digit;
+record	->	"struct";
+record	->	"class";
+num		->	digit;
 id		->	identifier;
 $$
-/* Definition Syntax
- * 	using Def  = Definition
- * 	using Ty   = Type
- * 	using Cmp  = Component
- */
+Prgm_	->	Prgm;
+Prgm	->	Stmt;
+Prgm	->	epsilon;
+Stmt	->	Stmt Stc;
+Stmt	-> 	Stc;
+Stc		-> 	_Definition.Stc;
+
 _Definition:
-Def		-> 	Ty id ";" Def;				
-Def		->	epsilon;					
-Ty		->	bTy Cmp;					
-Ty		->	record "{" Def "}";	
-Cmp		->	epsilon;					
-Cmp		->	"["num"]" Cmp;				
-/* Controll Syntax
- * 	using Stmt  = Statement
- * 	using BlEx  = BooleanExpression
- */
-_Controll:
-Stmt	->	"if" ( BlEx ) Stmt;				
-Stmt	->	"if" ( BlEx ) Stmt "else" Stmt;	
-Stmt	->	"while" ( BlEx ) Stmt;			
-Stmt	->	Stmt ";" Stmt;				
-Stmt	->	assign;						
-/* Expression Syntax
- * 	using Exp   = Expression
- * 	using Tpl   = Tuple
- *	using Fn	= Final
- */
-_Expression: 
-Exp	->	Exp + Tpl;						{do_plus};
-Exp	->	Exp - Tpl;						{do_minus};
-Exp	->	Tpl;							{do_Exp_from_Tpl};
-Tpl	->	Tpl * Fn;						{do_multiply};
-Tpl	->	Tpl / Fn;						{do_divide};
-Tpl	->	Fn;								{do_Tpl_from_Fn};
-Fn	->	( Exp );						{do_compress};
-Fn	->	id;								{do_getid};
-Fn	->	num;							{do_getid};
+Stc		->	M0 VarDef;							
+M0		->	epsilon;						{begin_def};// top = var_table;	
+VarDef	-> 	Def;							
+
+Stc		->	M1 TyDef;						
+M1		->	epsilon;						{begin_typedef};// top = type_head
+TyDef	->	TyHead "{" M2 Defs"}" ";";		{end_typedef};// pop table;get ILEntry from TyHead;TyHead.width = offset;
+TyHead	->	Record Id;						{set_typeHead};// new ILEntry;set type(struct/class/...);set Token(cTyname); AddEntry;
+M2		->	epsilon;						{new_table};// push table;new table;
+
+Defs	->	Defs Def;						{building_defs};
+Defs	->	Def;							{begin_defs};
+Def 	->	Ty Id ";";						{set_as_def};// get ILEntry from Ty;Get Token from Id; Ty.token = Id.token; AddEntry;
+
+Ty		->	CTy;							{passon_type};
+Ty		->	BTy Arr;						{complete_arrayType};// get ILEntry from Ty;set array_info;set entry.width = width * array_info;
+Ty		->	CTy Arr;						{complete_arrayType};
+Ty		->  BTy;							{passon_type};
+Arr		->  Arr Cmp;						{building_array};// array_info.push_back(stoi(Cmp.Token.name));
+Arr		->	Cmp;							{begin_array};// pass array_info.push_back(stoi(Cmp.Token.name));
+
+Cmp		->	"[" Num "]";					{set_component};// PassOn Token;
+CTy		->	id;								{set_customeType};// search in type_head;copy;new ILEntry;set type;set width;
+BTy		->	bTy;							{set_baseType}; // new ILEntry;set type;set width;
+Record  ->	record;							{get_token};// Get Token;return Token;
+Num		->	num;							{get_token};
+Id		->	id;								{get_token};

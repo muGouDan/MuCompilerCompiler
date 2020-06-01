@@ -57,7 +57,13 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input)
 			if (!raw_string.YetNotStart()) c = '\0';
 			if (digit.Scann(c, input[line].line_no, iter, next)) token_set.push_back(digit.current_token);
 			if (assign.Scann(c, input[line].line_no, iter, next)) token_set.push_back(assign.current_token);
-			if (keyword.Scann(c, input[line].line_no, iter, next)) token_set.push_back(keyword.current_token);
+			if (keyword.Scann(c, input[line].line_no, iter, next))
+			{
+				//before Keyword shouldn't be [a...z][A...Z]["_"]
+				int before = iter - keyword.current_token.length() -1;				
+				if (before < 0 || !(isalpha(str[before]) || str[before] == '_'))
+					token_set.push_back(keyword.current_token);
+			}
 			if (identifier.Scann(c, input[line].line_no, iter, next)) token_set.push_back(identifier.current_token);
 			if (RelOp.Scann(c, input[line].line_no, iter, next)) token_set.push_back(RelOp.current_token);
 			if (LogOp.Scann(c, input[line].line_no, iter, next)) token_set.push_back(LogOp.current_token);

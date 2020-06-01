@@ -202,6 +202,14 @@ bool SLRParser<T>::Parse(const Token_Set& token_set, Transfer_Func trans_func,
 					<< " term: " << action.sym << std::endl;
 #endif // SLR_Debug
 				break;
+			case ActionType::move_epsilon:
+				state_stack.push(action.aim_state);
+				semantic_stack.push(nullptr);
+#ifdef SLR_Debug
+				std::cout << "move_epsilon state:" << action.aim_state
+					<< " term: " << action.sym << std::endl;
+#endif // SLR_Debug
+				break;
 			case ActionType::reduce:
 			{
 				for (size_t i = 0; i < action.production_length; i++)
@@ -408,6 +416,15 @@ bool SLRParser<T>::Parse(
 					<< " term: " << action.sym << std::endl;
 #endif // SLR_Debug
 				break;
+			case ActionType::move_epsilon:
+				state_stack.push(action.aim_state);
+				semantic_stack.push(nullptr);
+				top_token_iter = iter;
+#ifdef SLR_Debug
+				std::cout << "move_epsilon state:" << action.aim_state
+					<< " term: " << action.sym << std::endl;
+#endif // SLR_Debug
+				break;
 			case ActionType::reduce:
 			{
 				pass.clear();
@@ -439,11 +456,11 @@ bool SLRParser<T>::Parse(
 				pass.push_back(semantic_stack.top());
 				semantic_stack.pop();
 				on = false;
-				std::cout << information << ":SLRParser Accept" << std::endl;
-				acc = true;
 				semantic_stack.push(
 					semantic_action(ptr, std::move(pass), (size_t)action.sym, action.production_index, top_token_iter)
 				);
+				std::cout << information << ":SLRParser Accept" << std::endl;
+				acc = true;
 				break;
 			default:
 				assert("Fatal Error!");

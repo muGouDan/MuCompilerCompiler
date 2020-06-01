@@ -13,7 +13,7 @@ class CalculatorCompiler:public SyntaxDirected<CalculatorCompiler>
 public:
 	CalculatorCompiler(std::string cfg_path):SyntaxDirected(cfg_path)
 	{
-		Initialization;
+		Initialization();
 	}
 	virtual void SetupSemanticActionTable() override
 	{	

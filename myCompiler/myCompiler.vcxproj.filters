@@ -23,7 +23,10 @@
     <Filter Include="AutoSyntax">
       <UniqueIdentifier>{145b3342-f4be-4bde-92a1-d8afa74672f6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CostumerCode">
+    <Filter Include="ILGenerate">
+      <UniqueIdentifier>{2483f918-b7f8-49fd-8eb1-a5b5f8cc54f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CustomCode">
       <UniqueIdentifier>{b0471200-11de-4c79-b7a7-1dd11ab61a41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -72,10 +75,16 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="CalculatorCompiler.cpp">
-      <Filter>CostumerCode</Filter>
+      <Filter>CustomCode</Filter>
     </ClCompile>
     <ClCompile Include="ExampleCompiler.cpp">
-      <Filter>CostumerCode</Filter>
+      <Filter>CustomCode</Filter>
+    </ClCompile>
+    <ClCompile Include="ILSymbolTable.cpp">
+      <Filter>ILGenerate</Filter>
+    </ClCompile>
+    <ClCompile Include="ILGenerator.cpp">
+      <Filter>CustomCode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,13 +146,19 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="CalculatorCompiler.h">
-      <Filter>CostumerCode</Filter>
+      <Filter>CustomCode</Filter>
     </ClInclude>
     <ClInclude Include="ExampleCompiler.h">
-      <Filter>CostumerCode</Filter>
+      <Filter>CustomCode</Filter>
     </ClInclude>
     <ClInclude Include="DefinitionCompiler.h">
-      <Filter>CostumerCode</Filter>
+      <Filter>CustomCode</Filter>
+    </ClInclude>
+    <ClInclude Include="ILSymbolTable.h">
+      <Filter>ILGenerate</Filter>
+    </ClInclude>
+    <ClInclude Include="ILGenerator.h">
+      <Filter>CustomCode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +175,12 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="syntax_test.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="definition_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="test_syn.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

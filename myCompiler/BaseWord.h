@@ -40,7 +40,7 @@ namespace Scanner
 		size_t end = 0;
 		size_t length()
 		{
-			return end - start;
+			return end - start + 1;
 		}
 	};
 
