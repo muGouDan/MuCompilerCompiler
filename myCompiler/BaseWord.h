@@ -17,7 +17,7 @@ namespace Scanner
 	enum class TokenType
 	{
 		none,
-		rel_op,	
+		rel_op,
 		arith_op,
 		log_op,
 		digit,
@@ -26,8 +26,12 @@ namespace Scanner
 		keyword,
 		separator,
 		raw_string,
+		custom_type,
 		end_symbol
 	};
+ 
+	std::string TokenTypeToString(TokenType type);
+	TokenType StringToTokenType(std::string str);
 
 	struct Token
 	{

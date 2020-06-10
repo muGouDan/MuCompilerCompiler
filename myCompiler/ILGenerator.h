@@ -1,7 +1,8 @@
 #pragma once
 #include "SyntaxDirected.h"
 #include "ILSymbolTable.h"
-class ILGenerator:public SyntaxDirected<ILGenerator>
+#include "LR1Parser.h"
+class ILGenerator:public SyntaxDirected<ILGenerator,LR1>
 {
 public:
 	ILGenerator(std::string cfg_path) :SyntaxDirected(cfg_path)
@@ -35,66 +36,68 @@ public:
 			std::cout << *entry << std::endl;
 	}
 private:
-	struct PackedToken
-	{
-		const Token* token;
-		PackedToken(const Token* token_ptr):token(token_ptr){}
-	};
 	ILEnv Env;
 	//M0		->	epsilon
-	static void* begin_def(INPUT)
+	void* begin_def(INPUT)
 	{
-		_this->Env.SetVarTable();
+		Env.SetVarTable();
 		return nullptr;
 	}
 	//M1		->	epsilon
-	static void* begin_typedef(INPUT)
+	void* begin_typedef(INPUT)
 	{
-		_this->Env.SetTypeTable();
+		Env.SetTypeTable();
+		TokenSet[TokenIter+1].color = enmCFC_Cyan;
 		return nullptr;
 	}
 	//TyDef		->	TyHead { M2 Defs } ;
-	static void* end_typedef(INPUT)
+	void* end_typedef(INPUT)
 	{	
 		auto entry = GetPtr(ILEntry, 0);
-		entry->width = _this->Env.offset;
-		_this->Env.PopTable();
+		for (size_t i = TokenIter + 1; i < TokenSet.size(); ++i)
+			if (TokenSet[i].name == entry->token->name)
+			{
+				TokenSet[i].type = Scanner::TokenType::custom_type;
+				TokenSet[i].color = enmCFC_Cyan;
+			}			 
+		entry->width = Env.offset;
+		Env.PopTable();
 		return nullptr;
 	}
 	//TyHead	->	Record Id;	
-	static void* set_typeHead(INPUT)
+	void* set_typeHead(INPUT)
 	{
-		auto entry = _this->Env.CreateILEntry();
-		entry->meta_type = GetValue(PackedToken, 0).token->name;
-		entry->token = GetValue(PackedToken, 1).token;
-		_this->Env.AddEntryToCurrent(entry);
+		auto entry = Env.CreateILEntry();
+		entry->meta_type = GetPtr(Scanner::Token, 0)->name;
+		entry->token = GetPtr(Scanner::Token, 1);
+		Env.AddEntryToCurrent(entry);
 		//head of type_table doesn't care about offset 
 		entry->offset = 0;
 		return entry;
 	}
 	//M2		->	epsilon
-	static void* new_table(INPUT)
+	void* new_table(INPUT)
 	{
-		_this->Env.PushAndNewTable();
+		Env.PushAndNewTable();
 		return nullptr;
 	}
 	//Def		->	Ty Id ;
-	static void* set_as_def(INPUT)
+	void* set_as_def(INPUT)
 	{
 		auto entry = GetPtr(ILEntry, 0);
-		auto token = GetPtr(PackedToken, 1)->token;
+		auto token = GetPtr(Scanner::Token, 1);
 		entry->token = token;
-		_this->Env.AddEntryToCurrent(entry);
+		Env.AddEntryToCurrent(entry);
 		return nullptr;
 	}
 	//Ty		->	CTy
 	//Ty		->	BTy
-	static void* passon_type(INPUT)
+	void* passon_type(INPUT)
 	{
 		return PassOn(0);
 	}
 	//Ty		->	Ty Arr;	
-	static void* complete_arrayType(INPUT)
+	void* complete_arrayType(INPUT)
 	{
 		auto entry = GetPtr(ILEntry, 0);
 		const auto& array_info = GetValue(std::vector<size_t>, 1);
@@ -104,35 +107,35 @@ private:
 		return entry;
 	}
 	//Arr		->	Arr Cmp
-	static void* building_array(INPUT)
+	void* building_array(INPUT)
 	{
 		auto array_info = GetPtr(std::vector<size_t>,0);
-		auto token = GetPtr(PackedToken, 1)->token;
+		auto token = GetPtr(Scanner::Token, 1);
 		array_info->push_back(std::stoi(token->name));
 		return array_info;
 	}
 	//Arr		->	Cmp
-	static void* begin_array(INPUT)
+	void* begin_array(INPUT)
 	{
 		auto array_info = Create(std::vector<size_t>);
-		auto token = GetPtr(PackedToken, 0)->token;
+		auto token = GetPtr(Scanner::Token, 0);
 		array_info->push_back(std::stoi(token->name));
 		return array_info;
 	}
 	//CTy		->	id;
-	static void* set_customeType(INPUT)
+	void* set_customeType(INPUT)
 	{
 		ILEntry* entry = nullptr;
 		const auto& token = CurrentToken;
-		for (const auto& type : *_this->Env.type_head)
+		for (const auto& type : *Env.type_head)
 			if (type->token->name == token.name)
-				entry = _this->Env.CreateVarFromCType(type);
+				entry = Env.CreateVarFromCType(type);
 		return entry;
 	}
 	//BTy		->	bTy;
-	static void* set_baseType(INPUT)
+	void* set_baseType(INPUT)
 	{
-		auto entry = _this->Env.CreateILEntry();
+		auto entry = Env.CreateILEntry();
 		const auto& token = CurrentToken;
 		entry->meta_type = token.name;
 		if (token.name == "int")
@@ -144,16 +147,16 @@ private:
 		return entry;
 	}
 	//Cmp		->	[ Num ]
-	static void* set_component(INPUT)
+	void* set_component(INPUT)
 	{
 		return PassOn(1);
 	}	
 	//Record	->	record
 	//Num		->	num
 	//Id		->	id
-	static void* get_token(INPUT)
+	void* get_token(INPUT)
 	{
-		return Create(PackedToken, &CurrentToken);
+		return &CurrentToken;
 	}
 };
 

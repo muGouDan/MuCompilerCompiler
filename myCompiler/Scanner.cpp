@@ -77,5 +77,6 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input)
 		if (skip)
 			continue;
 	}
+	token_set.push_back(Scanner::Token{ Scanner::TokenType::end_symbol });
 	return token_set;
 }

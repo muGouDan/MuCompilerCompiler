@@ -22,7 +22,7 @@ public:
 	};
 	std::vector<MyData> myData;
 
-	static void* ExampleAction1(INPUT)
+	void* ExampleAction1(INPUT)
 	{
 		// Get the data struct from the first Symbol of the Production Body  
 		auto index = 0;
@@ -47,13 +47,13 @@ public:
 		return create_as;
 	}
 
-	static void* ExampleAction2(INPUT)
+	void* ExampleAction2(INPUT)
 	{
 		// if you need nothing to modify,use PassOn(index) to pass on the value
 		return PassOn(0);
 	}
 
-	static void* ExampleAction3(INPUT)
+	void* ExampleAction3(INPUT)
 	{
 		// if you need to get something from the tokens
 		// when reduce, token_iter will be the last recognized token
@@ -66,9 +66,9 @@ public:
 		return name;
 	}
 
-	static void* ExampleAction4(INPUT)
+	void* ExampleAction4(INPUT)
 	{
-		auto data = CreateFrom(_this->myData.size());
+		auto data = CreateFrom(myData.size());
 		return data;
 	}
 };

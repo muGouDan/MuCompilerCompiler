@@ -160,6 +160,15 @@
     <ClInclude Include="ILGenerator.h">
       <Filter>CustomCode</Filter>
     </ClInclude>
+    <ClInclude Include="SealedValue.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="LR1Parser.h">
+      <Filter>Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomCodeMacro.h">
+      <Filter>AutoSyntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="scanner_test.txt">
@@ -171,17 +180,14 @@
     <Text Include="my_keyword.cfg">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="syntax.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="syntax_test.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
     <Text Include="definition_test.txt">
       <Filter>Test Files</Filter>
     </Text>
-    <Text Include="test_syn.txt">
-      <Filter>Resource Files</Filter>
+    <Text Include="sample_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="syntax_test.txt">
+      <Filter>Test Files</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +201,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="complete_syntax.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test_syn.syn">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

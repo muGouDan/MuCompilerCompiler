@@ -5,60 +5,21 @@
 #include <fstream>
 #include <sstream>
 #include <typeinfo>
+#include <functional>
 #include "FileLoader.h"
 #include "Scanner.h"
 #include "Highlight.h"
 #include "SLRParser.h"
-//#define SEMANTIC_CHECK
+#include "LR1Parser.h"
+#include "SealedValue.h"
+#include "CustomCodeMacro.h"
+
 //#define SYNTAX_ACTION_DEBUG
-//#define SHOW_CATCHED_VAR
-//#define HIGH_LIGHT
-#define SHOW_PARSE_PROCESS
 
 #define SELECT_TOKENTYPE(token_type_name,type,element) if(token_type_name==#element) type = Scanner::TokenType::element; else
 #define END_SELECT ;
 
-#define INPUT						Type* _this, std::vector<void*> input, size_t token_iter, const Token_Set& token_set
-#define TokenSet					token_set
-#define TokenIter					token_iter
-#define CurrentToken				(token_set[token_iter])
-
-#define This						_this
-#define AddAction(action)			AddSemanticAction(#action,action) 
-#define Initialization			    CompleteSemanticActionTable
-#define GetValue(Type,index)		(*(Type*)(input[index]))		
-#define GetPtr(Type,index)			((Type*)(input[index]))		
-#define PassOn(index)				input[index]
-#define Create(Type,...)			MakeStorage(_this,new Type(__VA_ARGS__))
-#define CreateAs(Type,expr)			MakeStorage<Type>(_this,new Type(expr))
-#define CreateFrom(expr)			MakeStorageFrom(_this,expr)
-
-struct Sealed
-{
-	void* ptr = nullptr;
-	virtual ~Sealed() {}
-};
-
-template<typename T>
-struct SealedValue :public Sealed
-{
-	using Type = T;
-	SealedValue(T val) :value(new T(val))
-	{
-		ptr = value;
-	}
-	SealedValue(T* obj_ptr) :value(obj_ptr)
-	{
-		ptr = obj_ptr;
-	}
-	T* value;
-	virtual ~SealedValue()
-	{
-		delete value;
-	}
-};
-
-template<typename T>
+template<typename T,typename Parser = SLRParser<size_t>>
 class SyntaxDirected
 {
 public:
@@ -134,7 +95,7 @@ private:
 	Sym end = 0;
 	Token_Set token_set_for_production;
 	Token_Set token_set_for_definition;
-	SLRParser<Sym> slr_parser;
+	Parser my_parser;
 	std::map<std::string, Sym> record;
 	std::set<std::string> heads;
 	std::vector<std::string> sym_table;
@@ -145,7 +106,8 @@ private:
 	};
 	Production_Flag current_flag;
 	std::string current_name;
-	const Token_Set* token_set;
+	Token_Set* token_set;
+	std::vector<LineContent>* input = nullptr;
 	Production_Table production_table;
 	std::string scope_label = "_Global";
 	size_t part = 0;
@@ -174,12 +136,10 @@ private:
 	};
 	std::multimap<std::string, InfoPair> statements;
 	// find statement with (nonterm,pro_index)
-	std::vector<std::vector<void* (*)(Type* ptr, std::vector<void*>, size_t, const Token_Set&)>> quick_semantic_action_table;
-	static void* No_Action(Type*, std::vector<void*>, size_t, const Token_Set&)
-	{
-		return nullptr;
-	}
-	std::map<std::string, void* (*)(Type* ptr, std::vector<void*>, size_t, const Token_Set&)> initial_semantic_action_table;
+	//void* (Type::*No_Action)(std::vector<void*>, size_t, const Token_Set&) = nullptr;
+	std::map<std::string, void* (Type::*)(INPUT)> initial_semantic_action_table;
+	std::vector<std::vector<void* (Type::*)(INPUT)>> quick_semantic_action_table;
+	void (Type::*error_action)(std::vector<Sym> expects, size_t token_iter) = nullptr;
 	// Candidate and Quick_Candidate are used to tell which Token will be transfered to which terminator
 	// e.g. TokenType::identifier -> id || TokenType::digit -> id || Token.name == ")" -> )
 	struct Candidate
@@ -213,20 +173,49 @@ private:
 		std::cout << "(" << (*ptr->token_set)[token_iter].name << ")"<< std::endl;
 		for (auto item : ptr->initial_semantic_action_table)
 			if(item.second == ptr->quick_semantic_action_table[nonterm][pro_index])
-				std::cout << "Semantic Action:" << item.first <<"<"
-				<< item.second << ">"<< std::endl;
+				std::cout << "Semantic Action:" << item.first << std::endl;
 #endif //SHOW_PARSE_PROCESS
-		return ptr->quick_semantic_action_table[nonterm][pro_index](ptr->derive_ptr, input, token_iter, *ptr->token_set);
+		if (ptr->quick_semantic_action_table[nonterm][pro_index] == nullptr)
+			return nullptr;
+		else
+			return (ptr->derive_ptr->*(ptr->quick_semantic_action_table[nonterm][pro_index]))(input, token_iter, *ptr->token_set);
+	}
+	static void ErrorActionDispatcher(SyntaxDirected* ptr, std::vector<Sym> expects, size_t token_iter)
+	{
+		if (ptr->error_action == nullptr)
+		{
+			if (ptr->input)
+				Highlight(*(ptr->input), *(ptr->token_set), token_iter);
+			if ((*ptr->token_set)[token_iter].type == Scanner::TokenType::end_symbol)
+			{
+				if (token_iter > 0)
+					std::cout << "Missing Token After:\n" << (*ptr->token_set)[token_iter - 1] << std::endl;
+				else
+					std::cout << "No Symbol At All!" << std::endl;
+			}
+			else
+				std::cout << "Error Token:\n" << (*ptr->token_set)[token_iter] << std::endl;
+			std::cout << "Expected Symbol:";
+			for (const auto& item : expects)
+				std::cout << " \'" << ptr->sym_table[item] << "\' ";
+			std::cout << std::endl;
+		}			
+		else
+			(ptr->derive_ptr->*(ptr->error_action))(std::move(expects), token_iter);
 	}
 public:
 	SyntaxDirected(std::string path);
 
-	bool Parse(const Token_Set& token_set)
+	bool Parse(Token_Set& token_set)
 	{
 		this->token_set = &token_set;
-		return slr_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher, this);
+		return my_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher,ErrorActionDispatcher, this);
 	}
 
+	void SetInput(std::vector<LineContent>* input)
+	{
+		this->input = input;
+	}
 	~SyntaxDirected()
 	{
 		while (!to_delete.empty())
@@ -240,25 +229,25 @@ public:
 protected:
 	//Easy GC in Semantic Action
 	template<typename T>
-	static T* MakeStorage(SyntaxDirected* ptr, T* obj_ptr)
+	T* MakeStorage(T* obj_ptr)
 	{
 		auto temp = new SealedValue<T>(obj_ptr);
-		ptr->to_delete.push(temp);
+		to_delete.push(temp);
 		return temp->value;
 	}
 
 	template<typename T>
-	static T* MakeStorageFrom(SyntaxDirected* ptr, T obj)
+	T* MakeStorageFrom(T obj)
 	{
 		auto temp = new SealedValue<T>(obj);
-		ptr->to_delete.push(temp);
+		to_delete.push(temp);
 		return temp->value;
 	}
 
 	// Semantic Actions Setup
 	void CompleteSemanticActionTable()
 	{
-		slr_parser.SetUp(production_table, end - 1, end, epsilon, start);
+		my_parser.SetUp(production_table, end - 1, end, epsilon, start);
 		SetupSemanticActionTable();
 		//set the semantic action from initial_semantic_action_table to quick_semantic_action_table
 		for (const auto& statement : statements)
@@ -272,35 +261,40 @@ protected:
 	virtual void SetupSemanticActionTable()
 	{
 		SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
-		std::cout << "[Warning]: Haven't Set Semantic Actions!!!" << std::endl;
+		std::cout << "[Warning]: Yet Haven't Set Semantic Actions!!!" << std::endl;
 		SetConsoleColor();
 	}
-
-	void AddSemanticAction(const char* statement_label, void* (action)(Type* ptr, std::vector<void*>, size_t, const Token_Set&))
+	
+	void AddSemanticAction(const char* statement_label, void* (Type::* action)(INPUT))
 	{
 		initial_semantic_action_table[statement_label] = action;
 	}
 
+	void AddParseErrorAction(void (Type::* action)(std::vector<Sym> expects, size_t token_iter))
+	{
+		error_action = action;
+	}
 private:
 	Type* derive_ptr;
 	std::stack<Sealed*> to_delete;
 #pragma endregion
 };
 
-class TestCompiler :public SyntaxDirected<TestCompiler>
+class TestCompiler :public SyntaxDirected<TestCompiler,LR1Parser<size_t>>
 {
 public:
 	TestCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
 		Initialization();
 	}
+
 };
 
-template<typename T>
-size_t SyntaxDirected<T>::syntax_unique_id = 0;
+template<typename T, typename Parser>
+size_t SyntaxDirected<T,Parser>::syntax_unique_id = 0;
 
-template<typename T>
-void SyntaxDirected<T>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+template<typename T, typename Parser>
+void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 	switch (nonterm)
 	{
@@ -350,8 +344,8 @@ void SyntaxDirected<T>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm
 	}
 }
 
-template<typename T>
-void SyntaxDirected<T>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+template<typename T, typename Parser>
+void SyntaxDirected<T,Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 
 	switch (nonterm)
@@ -397,7 +391,7 @@ void SyntaxDirected<T>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm
 			production.push_back(ptr->record[name]);
 		ptr->current_flag.names_in_body.clear();
 		ptr->production_table[ptr->current_flag.head].push_back(std::move(production));
-		ptr->quick_semantic_action_table[ptr->current_flag.head].push_back(No_Action);
+		ptr->quick_semantic_action_table[ptr->current_flag.head].push_back(nullptr);
 #ifdef SYNTAX_ACTION_DEBUG
 		std::cout << "[Body -> IDs ;]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
@@ -431,8 +425,8 @@ void SyntaxDirected<T>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm
 	}
 }
 
-template<typename T>
-typename SyntaxDirected<T>::Sym SyntaxDirected<T>::TransferForDefinition(SyntaxDirected* ptr, const Scanner::Token& token)
+template<typename T, typename Parser>
+typename SyntaxDirected<T,Parser>::Sym SyntaxDirected<T,Parser>::TransferForDefinition(SyntaxDirected* ptr, const Scanner::Token& token)
 {
 	for (const auto& candidate : ptr->quick_candidates)
 	{
@@ -446,8 +440,8 @@ typename SyntaxDirected<T>::Sym SyntaxDirected<T>::TransferForDefinition(SyntaxD
 	throw(std::logic_error("TransferForDefinition Failed"));
 }
 
-template<typename T>
-void SyntaxDirected<T>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+template<typename T, typename Parser>
+void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 	switch (nonterm)
 	{
@@ -495,8 +489,8 @@ void SyntaxDirected<T>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t
 	}
 }
 
-template<typename T>
-SyntaxDirected<T>::SyntaxDirected(std::string path) :
+template<typename T, typename Parser>
+SyntaxDirected<T,Parser>::SyntaxDirected(std::string path) :
 	syntax_production_table(
 		{
 			//Whole_ -> WholeOrNone
@@ -540,9 +534,6 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	std::cout << "Production:" << std::endl;
 	Highlight(production_input, token_set_for_production);
 #endif // HIGH_LIGHT
-	token_set_for_production.push_back(Scanner::Token{ Scanner::TokenType::end_symbol });
-	token_set_for_definition.push_back(Scanner::Token{ Scanner::TokenType::end_symbol });
-
 	std::string type_name = typeid(Type).name();
 	std::cout << "[Syntax Parse:<" << type_name << ">] START" << std::endl;
 
@@ -610,18 +601,7 @@ SyntaxDirected<T>::SyntaxDirected(std::string path) :
 	for (const auto& candidate : candidates)
 	{
 		auto sym = record[candidate.sym_name];
-		Scanner::TokenType type = Scanner::TokenType::none;
-		SELECT_TOKENTYPE(candidate.type, type, none)
-			SELECT_TOKENTYPE(candidate.type, type, rel_op)
-			SELECT_TOKENTYPE(candidate.type, type, log_op)
-			SELECT_TOKENTYPE(candidate.type, type, arith_op)
-			SELECT_TOKENTYPE(candidate.type, type, keyword)
-			SELECT_TOKENTYPE(candidate.type, type, identifier)
-			SELECT_TOKENTYPE(candidate.type, type, digit)
-			SELECT_TOKENTYPE(candidate.type, type, assign)
-			SELECT_TOKENTYPE(candidate.type, type, separator)
-			SELECT_TOKENTYPE(candidate.type, type, raw_string)
-			SELECT_TOKENTYPE(candidate.type, type, end_symbol);
+		auto type = Scanner::StringToTokenType(candidate.type);
 		quick_candidates.push_back({ type,candidate.name,sym });
 	}
 

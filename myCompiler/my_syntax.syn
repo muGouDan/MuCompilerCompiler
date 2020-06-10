@@ -1,20 +1,8 @@
-id	->	identifier;
 num	->	digit;
 $$
-Prgm_	->	Prgm;
-Prgm	-> 	Prgm Stmt;
-Prgm	-> 	Stmt;
-Stmt	->	_Expression.E_;
-
-_Expression:
 E_	->	E;				{do_E__to_E};
 E	->	E + T;			{do_plus};
-E	->	E - T;			{do_minus};
 E	->	T;				{do_E_to_T};
-T	->	T * F;			{do_multiply};
-T	->	T / F;			{do_divide};
 T	->	F;				{do_T_to_F};
-F	->	( E );			{do_compress};
-F	->	id;				{do_getid};
 F	->	num;			{do_getid};
 

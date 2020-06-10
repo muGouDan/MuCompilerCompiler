@@ -29,7 +29,7 @@ public:
 		AddAction(do_compress);
 		AddAction(do_getid);
 	}
-	static void* do_E__to_E(INPUT)
+	void* do_E__to_E(INPUT)
 	{
 		std::cout << "result:" << std::endl;
 		const auto& res = GetValue(Id, 0);
@@ -55,11 +55,11 @@ public:
 			
 		return nullptr;
 	}
-	static void* do_E_to_T(INPUT)
+	void* do_E_to_T(INPUT)
 	{
 		return PassOn(0);
 	}
-	static void* do_plus(INPUT)
+	void* do_plus(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -108,7 +108,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_minus(INPUT)
+	void* do_minus(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -157,7 +157,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_multiply(INPUT)
+	void* do_multiply(INPUT)
 	{
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -196,7 +196,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_divide(INPUT)
+	void* do_divide(INPUT)
 	{	
 		auto res = Create(Id);
 		const auto& x = GetValue(Id, 0);
@@ -235,11 +235,11 @@ public:
 		}
 		return res;
 	}
-	static void* do_T_to_F(INPUT)
+	void* do_T_to_F(INPUT)
 	{
 		return PassOn(0);
 	}
-	static void* do_compress(INPUT)
+	void* do_compress(INPUT)
 	{
 		const auto& value = GetValue(Id, 1);
 		auto res = Create(Id);
@@ -262,7 +262,7 @@ public:
 		}
 		return res;
 	}
-	static void* do_getid(INPUT)
+	void* do_getid(INPUT)
 	{
 		auto res = Create(Id);
 		if (token_set[token_iter].type == Scanner::TokenType::digit)

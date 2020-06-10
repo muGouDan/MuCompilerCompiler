@@ -1,6 +1,6 @@
 int[3][2] a;
 
-int[10] hello;
+char[10] hello;
 
 struct Mystruct
 {
@@ -19,7 +19,3 @@ struct Mystruct2
 Mystruct2[3] d;
 
 int end;
-
-a[0][0] = 1;
-
-d[2].first[1].b = d[2].first[0].b;

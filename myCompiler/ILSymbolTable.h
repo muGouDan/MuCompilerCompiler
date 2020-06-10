@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "BaseWord.h"
 #include <stack>
+#include "BaseWord.h"
+#include "SealedValue.h"
 struct ILType
 {
 	struct Width
@@ -27,6 +28,7 @@ struct ILEntry
 	std::vector<size_t> array_info;
 	const Scanner::Token* token = nullptr;
 	ILSymbolTable* table_ptr = nullptr;
+	void* value = nullptr;
 	~ILEntry()
 	{
 		if (table_ptr&&independent)
@@ -38,40 +40,8 @@ struct ILEntry
 private:
 	ILEntry(){}
 	friend std::ostream& operator<<(std::ostream& out, const ILEntry& entry);
-	static void ShowRawEntry(const ILEntry* to_show)
-	{
-		std::cout << "MetaType<" << to_show->meta_type;
-		for (const auto& item : to_show->array_info)
-			std::cout << "[" << item << "]";
-		std::cout << "> ";
-		std::cout << "TokenName[" << to_show->token->name << "] ";
-		std::cout << "Width[" << to_show->width << "] ";
-		std::cout << "Offset[" << to_show->offset << "] ";
-	}
-	static void ShowAllEntry(const ILEntry* current)
-	{
-		ShowRawEntry(current);
-		if (current->table_ptr&&current->independent)
-		{	
-			++tabs;
-			for (size_t i = 0; i < (*current->table_ptr).size(); i++)
-			{
-				std::cout << std::endl;
-				for (size_t j = 0; j < tabs; ++j)
-				{					
-					if (j != 0)
-						std::cout << "©¦";
-					std::cout << "\t";
-				}
-				if (i < (*current->table_ptr).size() - 1)
-					std::cout << "©À©¤ ";
-				else
-					std::cout << "©¸©¤ ";
-				ShowAllEntry((*current->table_ptr)[i]);
-			}
-			--tabs;
-		}	
-	}
+	static void ShowRawEntry(const ILEntry* to_show);
+	static void ShowAllEntry(const ILEntry* current);
 	static size_t tabs;
 };
 
@@ -85,6 +55,7 @@ class ILEnv
 	std::stack<ILSymbolTable*> table_stack;
 	std::stack<size_t> offset_stack;	
 	std::vector<ILEntry*> to_delete;
+	std::stack<Sealed*> sealed_value;
 public:
 	ILSymbolTable* top;
 	ILSymbolTable* var_head;
@@ -100,34 +71,29 @@ public:
 	}
 	~ILEnv()
 	{
+		while (!sealed_value.empty())
+		{
+			delete sealed_value.top();
+			sealed_value.pop();
+		}
 		for (auto entry : to_delete)
 			delete entry;
 	}
+	template<typename T>
+	T* CreateValue(T obj)
+	{
+		auto temp = new SealedValue<T>(obj);
+		sealed_value.push(temp);
+		return temp->value;
+	}
+
 	ILEntry* CreateILEntry()
 	{
 		auto temp = new ILEntry();
 		to_delete.push_back(temp);
 		return temp;
 	}
-	ILEntry* CreateVarFromCType(ILEntry* src)
-	{
-		ILEntry* ret = CreateILEntry();
-		ret->meta_type = src->token->name;
-		ret->width = src->width;
-		if (is_typedef)
-		{
-			ret->table_ptr = src->table_ptr;
-			ret->independent = false;
-			return ret;
-		}
-		if (src->table_ptr)
-		{
-			ret->table_ptr = new ILSymbolTable();
-			for (auto entry : *src->table_ptr)
-				ret->table_ptr->push_back(Copy(entry));
-		}
-		return ret;
-	}
+	ILEntry* CreateVarFromCType(ILEntry* src);
 	void SetVarTable()
 	{
 		top = var_head;
@@ -142,7 +108,7 @@ public:
 	// then add the entry to var_head
 	void AddEntryToCurrent(ILEntry* entry)
 	{
-		entry->offset = offset;
+		entry->offset = ceil((double)offset/(double)entry->width)* entry->width;
 		offset += entry->width;
 		top->push_back(entry);
 	}
@@ -170,21 +136,6 @@ public:
 			throw(std::logic_error("Empty Stack"));
 	}
 private:
-	ILEntry* Copy(const ILEntry* current)
-	{
-		ILEntry* ret = CreateILEntry();
-		ret->meta_type = current->meta_type;
-		ret->token = current->token;
-		ret->offset = current->offset;
-		ret->width = current->width;
-		ret->array_info = current->array_info;
-		if (current->table_ptr)
-		{
-			ret->table_ptr = new ILSymbolTable();
-			for (auto entry : *current->table_ptr)
-				ret->table_ptr->push_back(Copy(entry));
-		}
-		return ret;
-	}
+	ILEntry* Copy(const ILEntry* current);
 };
 

@@ -1,5 +1,0 @@
-$$
-A_	->	A;
-A	->	M0 B;
-M0	->	epsilon;
-B	-> "int";

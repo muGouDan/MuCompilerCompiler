@@ -173,6 +173,7 @@
     <ClInclude Include="ArithmeticOperator.h" />
     <ClInclude Include="Assignment.h" />
     <ClInclude Include="BaseWord.h" />
+    <ClInclude Include="CustomCodeMacro.h" />
     <ClInclude Include="DefinitionCompiler.h" />
     <ClInclude Include="Digit.h" />
     <ClInclude Include="ExampleCompiler.h" />
@@ -180,8 +181,10 @@
     <ClInclude Include="FileLoader.h" />
     <ClInclude Include="ILGenerator.h" />
     <ClInclude Include="ILSymbolTable.h" />
+    <ClInclude Include="LR1Parser.h" />
     <ClInclude Include="RawString.h" />
     <ClInclude Include="CalculatorCompiler.h" />
+    <ClInclude Include="SealedValue.h" />
     <ClInclude Include="SyntaxDirected.h" />
     <ClInclude Include="SetHelper.h" />
     <ClInclude Include="Highlight.h" />
@@ -198,16 +201,16 @@
     <Text Include="definition_test.txt" />
     <Text Include="my_keyword.cfg" />
     <Text Include="parser_test.txt" />
+    <Text Include="sample_test.txt" />
     <Text Include="scanner_test.txt" />
-    <Text Include="syntax.txt" />
     <Text Include="syntax_test.txt" />
-    <Text Include="test_syn.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="complete_syntax.syn" />
     <None Include="control_syntax.syn" />
     <None Include="definition_syntax.syn" />
     <None Include="my_syntax.syn" />
+    <None Include="test_syn.syn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
