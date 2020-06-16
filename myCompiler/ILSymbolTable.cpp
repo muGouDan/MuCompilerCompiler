@@ -33,7 +33,8 @@ ILEntry* ILEnv::Copy(const ILEntry* current)
 	ILEntry* ret = CreateILEntry();
 	ret->meta_type = current->meta_type;
 	ret->token = current->token;
-	ret->offset = current->offset;
+	ret->value = current->value;
+	ret->offset = current->offset;	
 	ret->width = current->width;
 	ret->array_info = current->array_info;
 	if (current->table_ptr)
@@ -51,7 +52,14 @@ void ILEntry::ShowRawEntry(const ILEntry* to_show)
 	for (const auto& item : to_show->array_info)
 		std::cout << "[" << item << "]";
 	std::cout << "> ";
-	std::cout << "TokenName[" << to_show->token->name << "] ";
+	if(to_show->token)
+		std::cout << "NameValPair<" << to_show->token->name << ",";
+	else
+		std::cout << "Val<";
+	if (to_show->value.size())
+		std::cout << to_show->value << ">";
+	else
+		std::cout << "Null>";
 	std::cout << "Width[" << to_show->width << "] ";
 	std::cout << "Offset[" << to_show->offset << "] ";
 }
@@ -66,11 +74,7 @@ void ILEntry::ShowAllEntry(const ILEntry* current)
 		{
 			std::cout << std::endl;
 			for (size_t j = 0; j < tabs; ++j)
-			{
-				if (j != 0)
-					std::cout << "©¦";
 				std::cout << "\t";
-			}
 			if (i < (*current->table_ptr).size() - 1)
 				std::cout << "©À©¤ ";
 			else

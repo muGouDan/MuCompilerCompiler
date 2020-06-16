@@ -13,7 +13,6 @@
 #include "ExampleCompiler.h"
 #include "ILGenerator.h"
 using namespace Scanner;
-using namespace Parser;
 
 int main()
 {
@@ -28,16 +27,16 @@ int main()
 	//CalculatorCompiler myCompiler("my_syntax.syn");
 	//myCompiler.Parse(token_set);
 
-	auto input_def = FileLoader("definition_test.txt");
-	auto def_token_set = EasyScanner(input_def);
+	auto input = FileLoader("definition_test.txt");
+	auto token_set = EasyScanner(input);
 	std::cout << "Scanner:" << std::endl;
-	Highlight(input_def, def_token_set);
+	Highlight(input, token_set);
 	std::cout << "\n" << std::endl;
 	ILGenerator iLgenerator("complete_syntax.syn");
-	iLgenerator.SetInput(&input_def);
-	if (iLgenerator.Parse(def_token_set))
+	iLgenerator.SetInput(input);
+	if (iLgenerator.Parse(token_set))
 	{
-		Highlight(input_def, def_token_set);
+		Highlight(input, token_set);
 		iLgenerator.ShowTables();
 	}
 }

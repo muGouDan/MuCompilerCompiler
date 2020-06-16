@@ -189,6 +189,9 @@
     <Text Include="syntax_test.txt">
       <Filter>Test Files</Filter>
     </Text>
+    <Text Include="assignment_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="my_syntax.syn">

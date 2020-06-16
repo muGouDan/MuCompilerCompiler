@@ -198,6 +198,7 @@
     <ClInclude Include="SLRParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="assignment_test.txt" />
     <Text Include="definition_test.txt" />
     <Text Include="my_keyword.cfg" />
     <Text Include="parser_test.txt" />

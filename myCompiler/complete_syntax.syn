@@ -3,6 +3,7 @@ bTy		->	"float";
 bTy		->	"char";
 record	->	"struct";
 record	->	"class";
+str		->	raw_string;
 num		->	digit;
 id		->	identifier;
 cTy		->	custom_type;
@@ -29,47 +30,60 @@ M2		->	epsilon;						{new_table};// push table;new table;
 Defs	->	Defs Def;						{building_defs};
 Defs	->	Def;							{begin_defs};
 Def 	->	Ty Id ";";						{set_as_def};// get ILEntry from Ty;Get Token from Id; Ty.token = Id.token; AddEntry;
+Def		->	Ty Id "=" ImVal ";";			{set_def_with_val};// get ILEntry from Ty;Get Token from Id(1); Ty.token = Id(1).token; Ty.val = Id(2).token.name; AddEntry;
 
-Ty		->	CTy;							{passon_type};
+Ty		->	CTy;							{passon_0};
 Ty		->	BTy Arr;						{complete_arrayType};// get ILEntry from Ty;set array_info;set entry.width = width * array_info;
 Ty		->	CTy Arr;						{complete_arrayType};
-Ty		->  BTy;							{passon_type};
+Ty		->  BTy;							{passon_0};
 Arr		->  Arr Cmp;						{building_array};// array_info.push_back(stoi(Cmp.Token.name));
 Arr		->	Cmp;							{begin_array};// pass array_info.push_back(stoi(Cmp.Token.name));
 
-Cmp		->	"[" Num "]";					{set_component};// PassOn Token;
+Cmp		->	"[" Num "]";					{passon_1};// PassOn Token;
 CTy		->	cTy;							{set_customeType};// search in type_head;copy;new ILEntry;set type;set width;
 BTy		->	bTy;							{set_baseType}; // new ILEntry;set type;set width;
 Record  ->	record;							{get_token};// Get Token;return Token;
-Num		->	num;							{get_token};
 Id		->	id;								{get_token};
 
+ImVal	->	Str;							{passon_0};
+ImVal	->	Num;							{passon_0};
+Str		->	str;							{get_token};
+Num		->	num;							{get_token};
+
+
 _Assignment:
-Asgn	->	LVar "=" Expr ";";
+Asgn	->	LVal "=" RVal ";";
 
-Expr	->	"-" RVar;						{generate_minus};// new Temp Entry
-Expr	->	"(" RVar ")";					{passon_address};// PassOn
-Expr	->	 RVar;
+RVal	->	RVal "+" Tpl;					{do_add};
+RVal	->	RVal "-" Tpl;					{do_sub};
+RVal	->	Tpl;							{passon_0};
+Tpl		->	Tpl "*" Fn;						{do_mul};
+Tpl		->	Tpl "/" Fn;						{do_div};
+Tpl		->	Fn;								{passon_0};
+Fn		->	"(" Expr ")";					{passon_1};
+Fn		->	"-" Val;						{do_negate};// new Temp Entry
+Fn		->	 Val;							{passon_0};
 
+Val		->	LVal;							{passon_0};
+Val		->	ImVal;							{passon_0};
+// struct
+LVal	->	LValCmp;						{passon_0};
+LValCmp	->	LValCmp "." LValMem;			{check_member};// get(0) check if ILEntry has LValMem in its table, passon_2
+LValCmp	->	LValMem;						{check_var_in_table};
+// baseType
+LValMem	->	MemId;							{passon_0};
+MemId	->	Id;								{complete_memId};
+// arrayType
+LValMem	->	ArrVar;							{passon_0};
 
-LVar	->	LVarCmp;
-LVarCmp	->	LVarCmp "." LVarMem;
-LVarCmp	->	LVarMem;
-LVarMem	->	Id;
-LVarMem	->	ArrVar;
-
-RVar	->	RVarCmp;
-RVarCmp	->	RVarCmp "." RVarMem;
-RVarCmp	->	RVarMem;
-RVarMem	->	Id;
-RVarMem	->	ArrVar;
-RVarMem	->	Num;
-
-
-ArrVar	->  Id Arr;
+ArrVar	->	Id M_Ar Arr;					{complete_array};// new temp ILEntry set array dimension
+M_Ar	->	epsilon;						{create_array_dimension};
 Arr		->  Arr Cmp;						
 Arr		->	Cmp;							
-Cmp		->	"[" Num "]";
+Cmp		->	"[" RVal "]";					{inc_array_dimension};//
 
+ImVal	->	Str;							{passon_0};
+ImVal	->	Num;							{passon_0};
+Str		->	str;							{get_token};
 Id		->	id;								{get_token};
 Num		->	num;							{get_token};

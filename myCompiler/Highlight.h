@@ -93,7 +93,7 @@ void Highlight(Input&& input, TokenSet&& token_set)
 }
 
 template<typename Input, typename TokenSet>
-void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter)
+void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter,std::string error_info = "Error Token")
 {
 	auto error = false;
 	size_t start = 0;
@@ -148,7 +148,7 @@ void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter)
 			std::cout << "[" << input[i].line_no << "\t]";
 			for (size_t t = 0; t < token_set[error_iter].start; ++t)
 				std::cout << " ";
-			std::cout << "^ERROR Token" << std::endl;
+			std::cout << "^" << error_info << std::endl;
 			SetConsoleColor(enmCFC_White);
 			error = false;
 		}

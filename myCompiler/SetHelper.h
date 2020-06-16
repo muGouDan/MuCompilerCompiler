@@ -13,6 +13,12 @@ enum class ActionType
 	reduce
 };
 
+struct StopParsing
+{
+	explicit StopParsing(std::string content) :content(content) {}
+	std::string content;
+};
+
 template <typename T>
 class SetHelper
 {
@@ -272,136 +278,7 @@ public:
 		std::vector<LR1Item>& I,
 		const Production_Table& production_table,
 		const First_Table& first_table,
-		const T& epsilon, const T& start = (T)0)
-	{
-		bool changed = true;
-		while (changed)
-		{
-			changed = false;
-			for (size_t i = 0;i<I.size();++i)
-			{
-				auto pro_length = production_table[I[i].nonterm][I[i].production_index].size();
-				//if A -> X .
-				if (I[i].point_pos >= pro_length) continue;
-				
-				// else: A -> ¦Á.B¦Â
-				auto B = production_table[I[i].nonterm][I[i].production_index][I[i].point_pos];
-				if (B < epsilon)
-				{
-					for (size_t B_pro_index = 0; B_pro_index < production_table[B].size(); ++B_pro_index)
-						// for each [B->¦Ã]
-					{
-						// Get First(¦Âa)
-						// if ¦Â = ¦Å,First(¦Âa) = a, put [B->.¦Ã,a]
-						if (I[i].point_pos + 1 >= pro_length)						
-						{
-							auto contain = false;
-							LR1Item newitem = { B,B_pro_index,0,I[i].LAterm };
-							//for(size_t j = i;j<I.size();++j)
-							for (const auto& containedItem : I)
-								if (containedItem == newitem)
-								{
-									contain = true;
-									break;
-								}
-							if (!contain)
-							{
-								I.push_back(std::move(newitem));
-								changed = true;
-							}
-						}
-						else // ¦Â != ¦Å
-						{
-							// for every sym in ¦Â
-							for (size_t iter = I[i].point_pos + 1; 
-								iter < production_table[I[i].nonterm][I[i].production_index].size(); 
-								++iter)
-							{							
-								const auto& sym = production_table[I[i].nonterm][I[i].production_index][iter];
-								if (sym > epsilon) //if sym is term
-								{
-									const auto& term = sym;
-									auto contain = false;
-									LR1Item newitem = { B,B_pro_index,0, term };
-									for (const auto& containedItem : I)
-										if (containedItem == newitem)
-										{
-											contain = true;
-											break;
-										}
-									if (!contain)
-									{
-										I.push_back(std::move(newitem));
-										changed = true;
-									}
-									break;
-								}
-								else // sym is nonterm
-								{
-									const auto& firsts = first_table[sym];
-									bool has_epsilon = false;
-									for (const auto& first : firsts)
-									{
-										if (first == epsilon) has_epsilon = true;
-										else
-										{
-											auto contain = false;
-											LR1Item newitem = { B,B_pro_index,0,first };
-											for (const auto& containedItem : I)
-												if (containedItem == newitem)
-												{
-													contain = true;
-													break;
-												}
-											if (!contain)
-											{
-												I.push_back(std::move(newitem));
-												changed = true;
-											}
-										}
-									}
-
-									// if first(¦Â) has epsilon
-									if (has_epsilon)
-									{
-										auto contain = false;
-										LR1Item newitem = { B,B_pro_index,0,I[i].LAterm };
-										for (const auto& containedItem : I)
-											if (containedItem == newitem)
-											{
-												contain = true;
-												break;
-											}
-										if (!contain)
-										{
-											I.push_back(std::move(newitem));
-											changed = true;
-										}
-									}
-
-								}
-							}
-						}
-
-					}
-				}
-				// [A->¦Á.B¦Â,a]
-				for (size_t nonterm = 0; nonterm < production_table.size(); ++nonterm)
-					for (size_t pro_index = 0; pro_index < production_table[nonterm].size(); ++pro_index)
-					{
-						auto pro_length = production_table[nonterm][pro_index].size();
-						if (I[i].point_pos >= pro_length)
-							// [A->¦Á.,a]
-							continue;				
-						if (B < epsilon)
-							// if B is nonterm
-						{
-							
-						}
-					}
-			}
-		}
-	}
+		const T& epsilon, const T& start = (T)0);
 
 	static SimplifiedSetOfItems GOTO(
 		const Production_Table& production_table,
@@ -412,80 +289,12 @@ public:
 		const Production_Table& production_table,
 		const First_Table& first_table,
 		const std::vector<LR1Item>& I,
-		const T& symbol, const T& epsilon, const T& start = (T)0)
-	{
-		std::vector<LR1Item> J;
-		// for every item
-		for (const auto& item : I)
-		{		
-			const auto& production =
-				production_table[item.nonterm][item.production_index];
-			if (item.point_pos < production.size()
-				// e.g. E->E.+T symbol = + A->.¦Å
-				&& production[item.point_pos] == symbol)
-			{
-				J.push_back({ item.nonterm ,item.production_index,item.point_pos + 1,item.LAterm });
-			}
-		}
-		CLOSURE(J, production_table, first_table, epsilon, start);
-		return J;
-	}
+		const T& symbol, const T& epsilon, const T& start = (T)0);
 
 	static std::tuple<LR1Collection, Goto_Table> COLLECTION_LR(
 		const Production_Table& production_table,
 		const First_Table& first_table,
-		const T& epsilon, const T& end, const T& start = (T)0)
-	{
-		std::tuple<LR1Collection, Goto_Table> ret;
-		auto& collection = std::get<0>(ret);
-		auto& table = std::get<1>(ret);
-		std::vector<LR1Item> I0 = { {start,0,0,end} };
-		CLOSURE(I0, production_table, first_table, epsilon, start);
-		collection.push_back(I0);
-
-		bool changed = true;
-		size_t iter = 0;
-		size_t start_pos = 0;
-		while (changed)
-		{
-			// in order to record where to start in next loop 
-			iter = collection.size();
-			changed = false;
-			for (size_t i = start_pos; i < collection.size(); ++i)
-				for (int Sym = 0; Sym <= (int)end; ++Sym)
-				{
-					// for every symbol X
-					std::vector<LR1Item> temp_I =
-						GOTO(production_table, first_table, collection[i], (T)Sym, epsilon, start);
-					bool inexist = true;
-					if (temp_I.size())
-						for (int j = 0; j < collection.size(); ++j)
-						{
-							if (temp_I == collection[j])
-							{
-								inexist = false;
-								// GOTO[state_i,symbol] -> state_j
-								table[{i, (T)Sym}] = j;
-								break;
-							}
-						}
-					else
-					{
-						continue;
-					}
-
-					if (inexist)
-					{
-						// generate a new state which is now the last elem of collection
-						table[{i, (T)Sym}] = collection.size();
-						collection.push_back(temp_I);
-						changed = true;
-					}
-				}
-			start_pos = iter;
-		}
-		return ret;
-	}
+		const T& epsilon, const T& end, const T& start = (T)0);
 
 	static std::tuple<CollectionOfItemSets, Goto_Table> COLLECTION(
 		const Production_Table& production_table,
@@ -496,99 +305,7 @@ public:
 		const LR1Collection& collection,
 		const Goto_Table& goto_table,
 		const Follow_Table& follow_table,
-		const T& epsilon, const T& end, const T& start = (T)0)
-	{
-		Action_Table ret;
-		auto int_end = (int)end;
-		auto int_epsilon = (int)epsilon;
-		auto int_start = (int)start;
-		for (const auto& item : goto_table)
-		{
-			auto Sym = std::get<1>(std::get<0>(item));
-			auto int_sym = (int)Sym;
-			auto cur_state = std::get<0>(std::get<0>(item));
-			auto aim_state = std::get<1>(item);
-			// every certain goto in goto_table
-			if (int_sym > int_epsilon && int_sym < int_end)
-				// if the state is A->¦Á.a¦Â, a is a term
-			{
-				// then ACTION[i,a] = move in a
-				Action a;
-				a.type = ActionType::move_in;
-				// also record the next state to be moved into the stack
-				a.aim_state = aim_state;
-				a.sym = (T)int_sym;
-				a.production_length = 0;
-				auto iter = ret.find({ cur_state, Sym });
-				if (iter != ret.end())
-					if (a.type != iter->second.type
-						|| a.sym != iter->second.sym)
-						throw std::logic_error("Confliction");
-				ret[{cur_state, Sym}] = std::move(a);
-			}
-			else if (int_sym == int_epsilon)
-			{
-				for (const auto& item : collection[cur_state])
-					if (production_table[item.nonterm][item.production_index][0] == epsilon)
-					{
-						Action a;
-						a.type = ActionType::move_epsilon;
-						// also record the next state to be moved into the stack
-						a.aim_state = aim_state;
-						a.sym = (T)int_sym;
-						a.production_length = 0;
-						auto iter = ret.find({ cur_state, item.LAterm });
-						if (iter != ret.end())
-							if (a.type != iter->second.type
-								|| a.sym != iter->second.sym
-								|| a.production_index != iter->second.production_index)
-								throw std::logic_error("Confliction");
-						ret[{cur_state, item.LAterm}] = std::move(a);
-					}
-			}
-		}
-		//for every certain Ii
-		for (size_t i = 0; i < collection.size(); ++i)
-		{
-			//for every certain item in Ii
-			for (const auto& item : collection[i])
-			{
-				auto production_length = production_table[item.nonterm][item.production_index].size();
-				if (item.point_pos >= production_length)
-					// if the state is A->¦Á.
-				{
-					if (item.nonterm == start)
-						// if S'-> S.
-					{
-						// then ACTION[i,$] = accept
-						Action a;
-						a.type = ActionType::accept;
-						a.aim_state = 0;
-						a.sym = start;
-						a.production_index = item.production_index;
-						a.production_length = production_length;
-						ret[{i, end}] = std::move(a);
-					}
-					else
-					{
-						// [A->¦Á.,a]
-						// ACTION[i,a] = reduce A->¦Á
-						Action a;
-						a.type = ActionType::reduce;
-						// also record the head of the production
-						a.sym = item.nonterm;
-						a.production_index = item.production_index;
-						a.production_length = production_length;
-
-						if (ret.count({ i, item.LAterm }))
-							throw std::logic_error("Confliction");
-						ret[{i, item.LAterm}] = std::move(a);
-					}
-				}
-			}
-		}
-		return ret;
-	}
+		const T& epsilon, const T& end, const T& start = (T)0);
 
 	static Action_Table SetActionTable(
 		const Production_Table& production_table,
@@ -745,6 +462,142 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::CLOSURE(
 }
 
 template<typename T>
+void SetHelper<T>::CLOSURE(
+	std::vector<LR1Item>& I, 
+	const Production_Table& production_table,
+	const First_Table& first_table, 
+	const T& epsilon, const T& start)
+{
+	bool changed = true;
+	while (changed)
+	{
+		changed = false;
+		for (size_t i = 0; i < I.size(); ++i)
+		{
+			auto pro_length = production_table[I[i].nonterm][I[i].production_index].size();
+			//if A -> X .
+			if (I[i].point_pos >= pro_length) continue;
+
+			// else: A -> ¦Á.B¦Â
+			auto B = production_table[I[i].nonterm][I[i].production_index][I[i].point_pos];
+			if (B < epsilon)
+			{
+				for (size_t B_pro_index = 0; B_pro_index < production_table[B].size(); ++B_pro_index)
+					// for each [B->¦Ã]
+				{
+					// Get First(¦Âa)
+					// if ¦Â = ¦Å,First(¦Âa) = a, put [B->.¦Ã,a]
+					if (I[i].point_pos + 1 >= pro_length)
+					{
+						auto contain = false;
+						LR1Item newitem = { B,B_pro_index,0,I[i].LAterm };
+						//for(size_t j = i;j<I.size();++j)
+						for (const auto& containedItem : I)
+							if (containedItem == newitem)
+							{
+								contain = true;
+								break;
+							}
+						if (!contain)
+						{
+							I.push_back(std::move(newitem));
+							changed = true;
+						}
+					}
+					else // ¦Â != ¦Å
+					{
+						// for every sym in ¦Â
+						for (size_t iter = I[i].point_pos + 1;
+							iter < production_table[I[i].nonterm][I[i].production_index].size();
+							++iter)
+						{
+							const auto& sym = production_table[I[i].nonterm][I[i].production_index][iter];
+							if (sym > epsilon) //if sym is term
+							{
+								const auto& term = sym;
+								auto contain = false;
+								LR1Item newitem = { B,B_pro_index,0, term };
+								for (const auto& containedItem : I)
+									if (containedItem == newitem)
+									{
+										contain = true;
+										break;
+									}
+								if (!contain)
+								{
+									I.push_back(std::move(newitem));
+									changed = true;
+								}
+								break;
+							}
+							else // sym is nonterm
+							{
+								const auto& firsts = first_table[sym];
+								bool has_epsilon = false;
+								for (const auto& first : firsts)
+								{
+									if (first == epsilon) has_epsilon = true;
+									else
+									{
+										auto contain = false;
+										LR1Item newitem = { B,B_pro_index,0,first };
+										for (const auto& containedItem : I)
+											if (containedItem == newitem)
+											{
+												contain = true;
+												break;
+											}
+										if (!contain)
+										{
+											I.push_back(std::move(newitem));
+											changed = true;
+										}
+									}
+								}
+
+								// if first(¦Â) has epsilon
+								if (has_epsilon)
+								{
+									auto contain = false;
+									LR1Item newitem = { B,B_pro_index,0,I[i].LAterm };
+									for (const auto& containedItem : I)
+										if (containedItem == newitem)
+										{
+											contain = true;
+											break;
+										}
+									if (!contain)
+									{
+										I.push_back(std::move(newitem));
+										changed = true;
+									}
+								}
+
+							}
+						}
+					}
+
+				}
+			}
+			// [A->¦Á.B¦Â,a]
+			for (size_t nonterm = 0; nonterm < production_table.size(); ++nonterm)
+				for (size_t pro_index = 0; pro_index < production_table[nonterm].size(); ++pro_index)
+				{
+					auto pro_length = production_table[nonterm][pro_index].size();
+					if (I[i].point_pos >= pro_length)
+						// [A->¦Á.,a]
+						continue;
+					if (B < epsilon)
+						// if B is nonterm
+					{
+
+					}
+				}
+		}
+	}
+}
+
+template<typename T>
 typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 	const Production_Table& production_table,
 	const SimplifiedSetOfItems& I,
@@ -785,6 +638,84 @@ typename SetHelper<T>::SimplifiedSetOfItems SetHelper<T>::GOTO(
 				}
 	}
 	SimplifiedSetOfItems ret = CLOSURE(production_table, cores, epsilon, start);
+	return ret;
+}
+
+template<typename T>
+std::vector<typename SetHelper<T>::LR1Item> SetHelper<T>::GOTO(const Production_Table& production_table, const First_Table& first_table, const std::vector<LR1Item>& I, const T& symbol, const T& epsilon, const T& start)
+{
+	std::vector<LR1Item> J;
+	// for every item
+	for (const auto& item : I)
+	{
+		const auto& production =
+			production_table[item.nonterm][item.production_index];
+		if (item.point_pos < production.size()
+			// e.g. E->E.+T symbol = + A->.¦Å
+			&& production[item.point_pos] == symbol)
+		{
+			J.push_back({ item.nonterm ,item.production_index,item.point_pos + 1,item.LAterm });
+		}
+	}
+	CLOSURE(J, production_table, first_table, epsilon, start);
+	return J;
+}
+
+template<typename T>
+std::tuple<typename SetHelper<T>::LR1Collection, typename SetHelper<T>::Goto_Table> 
+SetHelper<T>::COLLECTION_LR(
+	const Production_Table& production_table, 
+	const First_Table& first_table, 
+	const T& epsilon, const T& end, const T& start)
+{
+	std::tuple<LR1Collection, Goto_Table> ret;
+	auto& collection = std::get<0>(ret);
+	auto& table = std::get<1>(ret);
+	std::vector<LR1Item> I0 = { {start,0,0,end} };
+	CLOSURE(I0, production_table, first_table, epsilon, start);
+	collection.push_back(I0);
+
+	bool changed = true;
+	size_t iter = 0;
+	size_t start_pos = 0;
+	while (changed)
+	{
+		// in order to record where to start in next loop 
+		iter = collection.size();
+		changed = false;
+		for (size_t i = start_pos; i < collection.size(); ++i)
+			for (int Sym = 0; Sym <= (int)end; ++Sym)
+			{
+				// for every symbol X
+				std::vector<LR1Item> temp_I =
+					GOTO(production_table, first_table, collection[i], (T)Sym, epsilon, start);
+				bool inexist = true;
+				if (temp_I.size())
+					for (int j = 0; j < collection.size(); ++j)
+					{
+						if (temp_I == collection[j])
+						{
+							inexist = false;
+							// GOTO[state_i,symbol] -> state_j
+							table[{i, (T)Sym}] = j;
+							break;
+						}
+					}
+				else
+				{
+					continue;
+				}
+
+				if (inexist)
+				{
+					// generate a new state which is now the last elem of collection
+					table[{i, (T)Sym}] = collection.size();
+					collection.push_back(temp_I);
+					changed = true;
+				}
+			}
+		start_pos = iter;
+	}
 	return ret;
 }
 
@@ -855,6 +786,106 @@ SetHelper<T>::COLLECTION(
 				}
 			}
 		start_pos = iter;
+	}
+	return ret;
+}
+
+template<typename T>
+typename SetHelper<T>::Action_Table SetHelper<T>::SetActionTable(
+	const Production_Table& production_table, 
+	const LR1Collection& collection, 
+	const Goto_Table& goto_table,
+	const Follow_Table& follow_table, 
+	const T& epsilon, const T& end, const T& start)
+{
+	Action_Table ret;
+	auto int_end = (int)end;
+	auto int_epsilon = (int)epsilon;
+	auto int_start = (int)start;
+	for (const auto& item : goto_table)
+	{
+		auto Sym = std::get<1>(std::get<0>(item));
+		auto int_sym = (int)Sym;
+		auto cur_state = std::get<0>(std::get<0>(item));
+		auto aim_state = std::get<1>(item);
+		// every certain goto in goto_table
+		if (int_sym > int_epsilon && int_sym < int_end)
+			// if the state is A->¦Á.a¦Â, a is a term
+		{
+			// then ACTION[i,a] = move in a
+			Action a;
+			a.type = ActionType::move_in;
+			// also record the next state to be moved into the stack
+			a.aim_state = aim_state;
+			a.sym = (T)int_sym;
+			a.production_length = 0;
+			auto iter = ret.find({ cur_state, Sym });
+			if (iter != ret.end())
+				if (a.type != iter->second.type
+					|| a.sym != iter->second.sym)
+					throw std::logic_error("Confliction");
+			ret[{cur_state, Sym}] = std::move(a);
+		}
+		else if (int_sym == int_epsilon)
+		{
+			for (const auto& item : collection[cur_state])
+				if (production_table[item.nonterm][item.production_index][0] == epsilon)
+				{
+					Action a;
+					a.type = ActionType::move_epsilon;
+					// also record the next state to be moved into the stack
+					a.aim_state = aim_state;
+					a.sym = (T)int_sym;
+					a.production_length = 0;
+					auto iter = ret.find({ cur_state, item.LAterm });
+					if (iter != ret.end())
+						if (a.type != iter->second.type
+							|| a.sym != iter->second.sym
+							|| a.production_index != iter->second.production_index)
+							throw std::logic_error("Confliction");
+					ret[{cur_state, item.LAterm}] = std::move(a);
+				}
+		}
+	}
+	//for every certain Ii
+	for (size_t i = 0; i < collection.size(); ++i)
+	{
+		//for every certain item in Ii
+		for (const auto& item : collection[i])
+		{
+			auto production_length = production_table[item.nonterm][item.production_index].size();
+			if (item.point_pos >= production_length)
+				// if the state is A->¦Á.
+			{
+				if (item.nonterm == start)
+					// if S'-> S.
+				{
+					// then ACTION[i,$] = accept
+					Action a;
+					a.type = ActionType::accept;
+					a.aim_state = 0;
+					a.sym = start;
+					a.production_index = item.production_index;
+					a.production_length = production_length;
+					ret[{i, end}] = std::move(a);
+				}
+				else
+				{
+					// [A->¦Á.,a]
+					// ACTION[i,a] = reduce A->¦Á
+					Action a;
+					a.type = ActionType::reduce;
+					// also record the head of the production
+					a.sym = item.nonterm;
+					a.production_index = item.production_index;
+					a.production_length = production_length;
+
+					if (ret.count({ i, item.LAterm }))
+						throw std::logic_error("Confliction");
+					ret[{i, item.LAterm}] = std::move(a);
+				}
+			}
+		}
 	}
 	return ret;
 }

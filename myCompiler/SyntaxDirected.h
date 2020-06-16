@@ -14,8 +14,6 @@
 #include "SealedValue.h"
 #include "CustomCodeMacro.h"
 
-//#define SYNTAX_ACTION_DEBUG
-
 #define SELECT_TOKENTYPE(token_type_name,type,element) if(token_type_name==#element) type = Scanner::TokenType::element; else
 #define END_SELECT ;
 
@@ -107,7 +105,6 @@ private:
 	Production_Flag current_flag;
 	std::string current_name;
 	Token_Set* token_set;
-	std::vector<LineContent>* input = nullptr;
 	Production_Table production_table;
 	std::string scope_label = "_Global";
 	size_t part = 0;
@@ -185,7 +182,13 @@ private:
 		if (ptr->error_action == nullptr)
 		{
 			if (ptr->input)
-				Highlight(*(ptr->input), *(ptr->token_set), token_iter);
+			{
+				std::stringstream ss;
+				ss << "Expected Symbol:";
+				for (const auto& item : expects)
+					ss << " \'" << ptr->sym_table[item] << "\' ";
+				Highlight(*(ptr->input), *(ptr->token_set), token_iter,ss.str());
+			}			
 			if ((*ptr->token_set)[token_iter].type == Scanner::TokenType::end_symbol)
 			{
 				if (token_iter > 0)
@@ -195,10 +198,6 @@ private:
 			}
 			else
 				std::cout << "Error Token:\n" << (*ptr->token_set)[token_iter] << std::endl;
-			std::cout << "Expected Symbol:";
-			for (const auto& item : expects)
-				std::cout << " \'" << ptr->sym_table[item] << "\' ";
-			std::cout << std::endl;
 		}			
 		else
 			(ptr->derive_ptr->*(ptr->error_action))(std::move(expects), token_iter);
@@ -212,10 +211,11 @@ public:
 		return my_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher,ErrorActionDispatcher, this);
 	}
 
-	void SetInput(std::vector<LineContent>* input)
+	void SetInput(std::vector<LineContent>& input)
 	{
-		this->input = input;
+		this->input = &input;
 	}
+
 	~SyntaxDirected()
 	{
 		while (!to_delete.empty())
@@ -227,6 +227,7 @@ public:
 
 #pragma region For Custom Code 
 protected:
+	std::vector<LineContent>* input = nullptr;
 	//Easy GC in Semantic Action
 	template<typename T>
 	T* MakeStorage(T* obj_ptr)
@@ -312,13 +313,13 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t 
 			ptr->heads.insert(name);
 			ptr->record.insert({ name,ptr->sym_table.size() - 1 });
 		}
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[Head]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 	}
 	break;
 	case Pro:
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		if (pro_index == 0)
 			std::cout << "[Pro -> Head axis Body]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 		else
@@ -335,7 +336,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t 
 		break;
 	case ScopeLabel:
 		ptr->scope_label = ptr->token_set_for_production[token_iter - 1].name;
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_production[token_iter - 1] << std::endl;
 #endif
 		break;
@@ -392,7 +393,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t 
 		ptr->current_flag.names_in_body.clear();
 		ptr->production_table[ptr->current_flag.head].push_back(std::move(production));
 		ptr->quick_semantic_action_table[ptr->current_flag.head].push_back(nullptr);
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[Body -> IDs ;]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 	}
@@ -410,13 +411,13 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t 
 			});
 
 	}
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 	std::cout << "[ActionLabel]:\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 	break;
 	case ScopeLabel:
 		ptr->scope_label = ptr->token_set_for_production[token_iter - 1].name;
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_production[token_iter - 1] << std::endl;
 #endif
 		break;
@@ -471,7 +472,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr,
 			}
 			ptr->candidates.push_back(ptr->candidate_flag);
 			ptr->candidate_record.insert(ptr->candidate_flag.sym_name);
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 			std::cout << "[IDs -> ss_sym]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
 		}
@@ -480,7 +481,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr,
 		break;
 	case ScopeLabel:
 		ptr->scope_label = ptr->token_set_for_definition[token_iter - 1].name;
-#ifdef SYNTAX_ACTION_DEBUG
+#ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[ScopeLabel -> ss_sym:]\n" << ptr->token_set_for_definition[token_iter - 1] << std::endl;
 #endif
 		break;

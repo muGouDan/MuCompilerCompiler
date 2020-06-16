@@ -1,14 +1,18 @@
 #pragma once
 
 // DEBUG OPTIONS:
+// Custom Syntax File Debug Options:
+//#define CUSTOM_SYNTAX_FILE_DEBUG
 //#define SEMANTIC_CHECK
 //#define SHOW_CATCHED_VAR
 //#define HIGH_LIGHT
+
+// Input Parsing Debug Options:
 //#define SHOW_PARSE_PROCESS
 
 
 
-// CUSTOM CODING:
+// CUSTOM CODING HELPER:
 #define LR1							LR1Parser<size_t>
 #define SLR							SLRParser<size_t>
 #define INPUT						std::vector<void*> input, size_t token_iter, Token_Set& token_set
@@ -24,3 +28,4 @@
 #define Create(Type,...)			MakeStorage(new Type(__VA_ARGS__))
 #define CreateAs(Type,expr)			MakeStorage<Type>(new Type(expr))
 #define CreateFrom(expr)			MakeStorageFrom(expr)
+#define SEMANTIC_ERROR				(void*)1

@@ -28,7 +28,7 @@ struct ILEntry
 	std::vector<size_t> array_info;
 	const Scanner::Token* token = nullptr;
 	ILSymbolTable* table_ptr = nullptr;
-	void* value = nullptr;
+	std::string value;
 	~ILEntry()
 	{
 		if (table_ptr&&independent)
@@ -113,14 +113,23 @@ public:
 		top->push_back(entry);
 	}
 
-	void PushAndNewTable()
+	void PushTable()
 	{
 		table_stack.push(top);
-		auto temp = new ILSymbolTable();
-		(*top)[top->size() - 1]->table_ptr = temp;
-		top = temp;
 		offset_stack.push(offset);
 		offset = 0;
+	}
+
+	ILSymbolTable* CreateILTableAsCurrent()
+	{
+		auto temp = new ILSymbolTable();
+		top = temp;
+		return temp;
+	}
+
+	ILEntry* LastILEntryInCurTable()
+	{
+		return (*top)[top->size() - 1];
 	}
 
 	void PopTable()

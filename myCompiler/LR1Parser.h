@@ -3,7 +3,11 @@
 #include "BaseWord.h"
 #include <stack>
 #include <vector>
+#define SEMANTIC_ERROR (void*)1
+
 //#define LR1_Debug
+
+
 template<typename T>
 class LR1Parser
 {
@@ -560,9 +564,14 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set,
 					<< "\tpop amount: " << action.production_length
 					<< " push state: " << goto_state << std::endl;
 #endif // LR1_Debug
-				semantic_stack.push(
-					semantic_action(ptr, std::move(pass), (size_t)action.sym, action.production_index, top_token_iter)
-				);
+				auto back = semantic_action(ptr, std::move(pass), (size_t)action.sym, action.production_index, top_token_iter);
+				if (back == SEMANTIC_ERROR)
+				{
+					on = false;
+					std::cout << information << ":LR1Parse STOP for semantic Error" << std::endl;
+				}
+				else
+					semantic_stack.push(back);
 				break;
 			}
 			case ActionType::accept:
