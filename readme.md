@@ -6,21 +6,21 @@ Toy Compiler Compiler from MuGoudan.
 
 ### from Definition to Symbol Table
 
-![success](.\pic\success.png)
+![success](https://github.com/muGouDan/myCompiler/blob/develop/pic/success.png)
 
 ### Syntax Error
 
-![syntax_error](.\pic\syntax_error.png)
+![syntax_error](https://github.com/muGouDan/myCompiler/blob/develop/pic/syntax_error.png)
 
 ### Semantic Error
 
-![semantic_error](.\pic\semantic_error.png)
+![semantic_error](https://github.com/muGouDan/myCompiler/blob/develop/pic/semantic_error.png)
 
 ### Config File
 
 (Notepad Syntax Highlight File provided in `./myCompiler/misc`)
 
-![config](.\pic\config.png)
+![config](https://github.com/muGouDan/myCompiler/blob/develop/pic/config.png)
 
 ## Quick start
 
