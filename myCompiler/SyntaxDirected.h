@@ -17,7 +17,7 @@
 #define SELECT_TOKENTYPE(token_type_name,type,element) if(token_type_name==#element) type = Scanner::TokenType::element; else
 #define END_SELECT ;
 
-template<typename T,typename Parser = SLRParser<size_t>>
+template<typename T, typename Parser = SLRParser<size_t>>
 class SyntaxDirected
 {
 public:
@@ -122,10 +122,10 @@ private:
 				"] starts with big letter,but is recognized as term" << std::endl;
 #endif // CHECK_ON
 			return token.name;
-		}
+	}
 		return name;
 		//return token.name;
-	}
+}
 	struct InfoPair
 	{
 		Sym nonterm;
@@ -136,7 +136,7 @@ private:
 	//void* (Type::*No_Action)(std::vector<void*>, size_t, const Token_Set&) = nullptr;
 	std::map<std::string, void* (Type::*)(INPUT)> initial_semantic_action_table;
 	std::vector<std::vector<void* (Type::*)(INPUT)>> quick_semantic_action_table;
-	void (Type::*error_action)(std::vector<Sym> expects, size_t token_iter) = nullptr;
+	void (Type::* error_action)(std::vector<Sym> expects, size_t token_iter) = nullptr;
 	// Candidate and Quick_Candidate are used to tell which Token will be transfered to which terminator
 	// e.g. TokenType::identifier -> id || TokenType::digit -> id || Token.name == ")" -> )
 	struct Candidate
@@ -166,10 +166,10 @@ private:
 #ifdef SHOW_PARSE_PROCESS
 		std::cout << ptr->sym_table[nonterm] << " -> ";
 		for (const auto& sym : ptr->production_table[nonterm][pro_index])
-			std::cout << ptr-> sym_table[sym] << " ";
-		std::cout << "(" << (*ptr->token_set)[token_iter].name << ")"<< std::endl;
+			std::cout << ptr->sym_table[sym] << " ";
+		std::cout << "(" << (*ptr->token_set)[token_iter].name << ")" << std::endl;
 		for (auto item : ptr->initial_semantic_action_table)
-			if(item.second == ptr->quick_semantic_action_table[nonterm][pro_index])
+			if (item.second == ptr->quick_semantic_action_table[nonterm][pro_index])
 				std::cout << "Semantic Action:" << item.first << std::endl;
 #endif //SHOW_PARSE_PROCESS
 		if (ptr->quick_semantic_action_table[nonterm][pro_index] == nullptr)
@@ -187,8 +187,8 @@ private:
 				ss << "Expected Symbol:";
 				for (const auto& item : expects)
 					ss << " \'" << ptr->sym_table[item] << "\' ";
-				Highlight(*(ptr->input), *(ptr->token_set), token_iter,ss.str());
-			}			
+				Highlight(*(ptr->input), *(ptr->token_set), token_iter, ss.str());
+			}
 			if ((*ptr->token_set)[token_iter].type == Scanner::TokenType::end_symbol)
 			{
 				if (token_iter > 0)
@@ -198,7 +198,7 @@ private:
 			}
 			else
 				std::cout << "Error Token:\n" << (*ptr->token_set)[token_iter] << std::endl;
-		}			
+		}
 		else
 			(ptr->derive_ptr->*(ptr->error_action))(std::move(expects), token_iter);
 	}
@@ -208,7 +208,7 @@ public:
 	bool Parse(Token_Set& token_set)
 	{
 		this->token_set = &token_set;
-		return my_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher,ErrorActionDispatcher, this);
+		return my_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher, ErrorActionDispatcher, this);
 	}
 
 	void SetInput(std::vector<LineContent>& input)
@@ -265,7 +265,7 @@ protected:
 		std::cout << "[Warning]: Yet Haven't Set Semantic Actions!!!" << std::endl;
 		SetConsoleColor();
 	}
-	
+
 	void AddSemanticAction(const char* statement_label, void* (Type::* action)(INPUT))
 	{
 		initial_semantic_action_table[statement_label] = action;
@@ -281,7 +281,7 @@ private:
 #pragma endregion
 };
 
-class TestCompiler :public SyntaxDirected<TestCompiler,LR1Parser<size_t>>
+class TestCompiler :public SyntaxDirected<TestCompiler, SLRParser<size_t>>
 {
 public:
 	TestCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
@@ -292,10 +292,10 @@ public:
 };
 
 template<typename T, typename Parser>
-size_t SyntaxDirected<T,Parser>::syntax_unique_id = 0;
+size_t SyntaxDirected<T, Parser>::syntax_unique_id = 0;
 
 template<typename T, typename Parser>
-void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+void SyntaxDirected<T, Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 	switch (nonterm)
 	{
@@ -316,7 +316,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t 
 #ifdef CUSTOM_SYNTAX_FILE_DEBUG
 		std::cout << "[Head]\n" << ptr->token_set_for_production[token_iter] << std::endl;
 #endif
-	}
+		}
 	break;
 	case Pro:
 #ifdef CUSTOM_SYNTAX_FILE_DEBUG
@@ -346,7 +346,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetHead(SyntaxDirected* ptr, size_t 
 }
 
 template<typename T, typename Parser>
-void SyntaxDirected<T,Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+void SyntaxDirected<T, Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 
 	switch (nonterm)
@@ -424,16 +424,22 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetBody(SyntaxDirected* ptr, size_t 
 	default:
 		break;
 	}
-}
+	}
 
 template<typename T, typename Parser>
-typename SyntaxDirected<T,Parser>::Sym SyntaxDirected<T,Parser>::TransferForDefinition(SyntaxDirected* ptr, const Scanner::Token& token)
+typename SyntaxDirected<T, Parser>::Sym SyntaxDirected<T, Parser>::TransferForDefinition(SyntaxDirected* ptr, const Scanner::Token& token)
 {
 	for (const auto& candidate : ptr->quick_candidates)
 	{
-		if (token.type == candidate.type)
-			return candidate.sym;
-		else if (token.name != "" && token.name == candidate.name)
+		bool null_name = false;
+		if (candidate.name != "")
+		{
+			if (token.type == candidate.type && token.name == candidate.name)
+				return candidate.sym;
+			else if (token.name == candidate.name)
+				return candidate.sym;
+		}
+		else if (token.type == candidate.type)
 			return candidate.sym;
 	}
 	if (token.type == Scanner::TokenType::end_symbol)
@@ -442,7 +448,7 @@ typename SyntaxDirected<T,Parser>::Sym SyntaxDirected<T,Parser>::TransferForDefi
 }
 
 template<typename T, typename Parser>
-void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
+void SyntaxDirected<T, Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr, size_t nonterm, size_t pro_index, size_t token_iter)
 {
 	switch (nonterm)
 	{
@@ -456,28 +462,24 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr,
 		ptr->candidate_flag.sym_name = ptr->token_set_for_definition[token_iter].name;
 		break;
 	case IDs:
-		if (pro_index == 1)// IDs->ss_sym
-		{
+
 			// if identifier, regard as definition via "TokenType -> terminator"
 			if (ptr->token_set_for_definition[token_iter].type == Scanner::TokenType::identifier)
 			{
 				ptr->candidate_flag.type = ptr->token_set_for_definition[token_iter].name;
-				ptr->candidate_flag.name = "";
 			}
 			// if raw_string, regard as definition via "TokenName -> terminator"
 			else if (ptr->token_set_for_definition[token_iter].type == Scanner::TokenType::raw_string)
 			{
 				ptr->candidate_flag.name = ptr->token_set_for_definition[token_iter].name;
-				ptr->candidate_flag.type = "none";
 			}
-			ptr->candidates.push_back(ptr->candidate_flag);
-			ptr->candidate_record.insert(ptr->candidate_flag.sym_name);
 #ifdef CUSTOM_SYNTAX_FILE_DEBUG
 			std::cout << "[IDs -> ss_sym]\n" << ptr->token_set_for_production[token_iter] << std::endl;
-#endif
-		}
-		else
-			throw(std::logic_error("Too Much IDs"));
+#endif	
+		break;
+	case Body:					
+		ptr->candidate_record.insert(ptr->candidate_flag.sym_name);
+		ptr->candidates.push_back(std::move(ptr->candidate_flag));
 		break;
 	case ScopeLabel:
 		ptr->scope_label = ptr->token_set_for_definition[token_iter - 1].name;
@@ -491,7 +493,7 @@ void SyntaxDirected<T,Parser>::SyntaxAction_SetUpDefinition(SyntaxDirected* ptr,
 }
 
 template<typename T, typename Parser>
-SyntaxDirected<T,Parser>::SyntaxDirected(std::string path) :
+SyntaxDirected<T, Parser>::SyntaxDirected(std::string path) :
 	syntax_production_table(
 		{
 			//Whole_ -> WholeOrNone

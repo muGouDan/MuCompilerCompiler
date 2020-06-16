@@ -1,8 +1,8 @@
-bTy		->	"int";
-bTy		->	"float";
-bTy		->	"char";
-record	->	"struct";
-record	->	"class";
+bTy		->	keyword && "int";
+bTy		->	keyword && "float";
+bTy		->	keyword && "char";
+record	->	keyword && "struct";
+record	->	keyword && "class";
 str		->	raw_string;
 num		->	digit;
 id		->	identifier;
@@ -60,7 +60,7 @@ RVal	->	Tpl;							{passon_0};
 Tpl		->	Tpl "*" Fn;						{do_mul};
 Tpl		->	Tpl "/" Fn;						{do_div};
 Tpl		->	Fn;								{passon_0};
-Fn		->	"(" Expr ")";					{passon_1};
+Fn		->	"(" RVal ")";					{passon_1};
 Fn		->	"-" Val;						{do_negate};// new Temp Entry
 Fn		->	 Val;							{passon_0};
 
