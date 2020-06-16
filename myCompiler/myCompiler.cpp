@@ -16,17 +16,6 @@ using namespace Scanner;
 
 int main()
 {
-	
-	//auto input = FileLoader("parser_test.txt");
-	//auto input = FileLoader("my_syntax.cfg");
-	//auto input = FileLoader("scanner_test.txt");
-	//std::cout << "Scanner:" << std::endl;
-	//std::vector<Token> token_set = EasyScanner(input);
-	//Highlight(input, token_set);
-
-	//CalculatorCompiler myCompiler("my_syntax.syn");
-	//myCompiler.Parse(token_set);
-
 	auto input = FileLoader("definition_test.txt");
 	auto token_set = EasyScanner(input);
 	std::cout << "Scanner:" << std::endl;
