@@ -78,9 +78,9 @@ new a text file in the workplace with extension ".syn", edit it with Notepad(or 
 
 ## Write your own Syntax
 
-there're two parts in the Syntax Definition File, separated by $$. (get a view of "complete_syntax.syn")
+there're two parts in the Syntax Definition File, separated by `$$`. (get a view of "complete_syntax.syn")
 
-The first part describes how to transfer a **Lexeme Token** to a Terminator. And the second part describes the **Produtions** and the **function names of Semantic Action**.
+The first part describes how to transfer a **Lexeme Token** to a **Terminator**. And the second part describes the **Produtions** and the **function names of Semantic Action**.
 
 ### Transfer Token to  CFG Terminator
 
@@ -109,7 +109,7 @@ bTy		->	"int";
 
 2. this is also ok, but not so safe, cause every token named "int" will be cast to bTy even though some are just raw string. Token will be prior cast to certain **Terminator** with strong restriction. e.g `bTy->keyword && "int"` has higher priority than `bTy2->"int"`, when the Token's type is `TokenType::keyword ` with name "int".
 
-3. the line `num		->	digit;` means: every token with type `TokenType::digit`(defined in `BaseWord.h`) will be cast to bTy (short for Base Type). This kind of rule --"Type-Only Rule", has the lowest priority, after "Type&&Name Rule" and "Name-Only Rule".
+3. the line `num		->	digit;` means: every token with type `TokenType::digit`(defined in `BaseWord.h`) will be cast to num. This kind of rule --"Type-Only Rule", has the lowest priority, after "Type&&Name Rule" and "Name-Only Rule".
 
 **Type&&Name Rule** is useful in specifying keyword.
 
