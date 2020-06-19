@@ -8,6 +8,51 @@ std::ostream& operator<<(std::ostream& out, const ILEntry& entry)
 	return std::cout;
 }
 
+std::ostream& operator<<(std::ostream& out, const Address& addr)
+{
+	//if is temp addr
+	if (addr.chain.size() == 0)
+	{
+		if (addr.token)//ImVal
+		{
+			out << "#" << addr.token->name;
+		}
+		else// Tmp
+		{
+			if (addr.code.size())
+				out << "#" << addr.code;
+			else
+				out << "t" << addr.id;
+		}
+	}
+	else
+	{
+		bool first = true;
+		size_t i = 0;
+		for (auto entry : addr.chain)
+		{
+			if (!first)
+				out << ".";
+			else
+				first = false;
+			out << entry->token->name;
+			if (entry->array_info.size())
+				out << "[" << *addr.array_index[i++]<<"]";
+		}
+	}
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const ILCode& code)
+{
+	out << *code.res << " <= " << code.op << " ";
+	if (code.left)
+		out << *code.left;
+	if (code.right)
+		out <<" , "<<*code.right;
+	return out;
+}
+
 ILEntry* ILEnv::CreateVarFromCType(ILEntry* src)
 {
 	ILEntry* ret = CreateILEntry();

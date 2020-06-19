@@ -1,6 +1,6 @@
 #include "Scanner.h"
 
-std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input)
+std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input_text)
 {
 	std::vector<Scanner::Token> token_set;
 	Scanner::RelationalOperator RelOp;
@@ -13,9 +13,9 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input)
 	Scanner::Separator separator;
 	Scanner::RawString raw_string;
 	bool omit = false;
-	for (size_t line = 0; line < input.size(); ++line)
+	for (size_t line = 0; line < input_text.size(); ++line)
 	{
-		auto str = input[line].content.c_str();
+		auto str = input_text[line].content.c_str();
 		size_t iter = 0;
 		char c;
 		bool skip = false;
@@ -53,23 +53,23 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input)
 				++iter;
 				continue;
 			}
-			if (raw_string.Scann(c, input[line].line_no, iter, next)) token_set.push_back(raw_string.current_token);
+			if (raw_string.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(raw_string.current_token);
 			if (!raw_string.YetNotStart()) c = '\0';
-			if (digit.Scann(c, input[line].line_no, iter, next)) token_set.push_back(digit.current_token);
-			if (assign.Scann(c, input[line].line_no, iter, next)) token_set.push_back(assign.current_token);
-			if (keyword.Scann(c, input[line].line_no, iter, next))
+			if (digit.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(digit.current_token);
+			if (assign.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(assign.current_token);
+			if (keyword.Scann(c, input_text[line].line_no, iter, next))
 			{
 				//before Keyword shouldn't be [a...z][A...Z]["_"]
 				int before = iter - keyword.current_token.length() -1;				
 				if (before < 0 || !(isalpha(str[before]) || str[before] == '_'))
 					token_set.push_back(keyword.current_token);
 			}
-			if (identifier.Scann(c, input[line].line_no, iter, next)) token_set.push_back(identifier.current_token);
-			if (RelOp.Scann(c, input[line].line_no, iter, next)) token_set.push_back(RelOp.current_token);
-			if (LogOp.Scann(c, input[line].line_no, iter, next)) token_set.push_back(LogOp.current_token);
-			if (arithOp.Scann(c, input[line].line_no, iter, next))token_set.push_back(arithOp.current_token);
+			if (identifier.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(identifier.current_token);
+			if (RelOp.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(RelOp.current_token);
+			if (LogOp.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(LogOp.current_token);
+			if (arithOp.Scann(c, input_text[line].line_no, iter, next))token_set.push_back(arithOp.current_token);
 			// last to do: sparator 
-			if (separator.Scann(c, input[line].line_no, iter, next)) token_set.push_back(separator.current_token);
+			if (separator.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(separator.current_token);
 			// recover the char.
 			c = str[iter++];
 		} while (c != '\0');

@@ -46,11 +46,10 @@ namespace Scanner
 	std::ostream& operator << (std::ostream& out, const Token& token)
 	{
 		std::string type_name = TokenTypeToString(token.type);
-		return std::cout
+		return out
 			<< "type: " << type_name << "\n"
 			<< "name: " << token.name << "\n"
 			//<< "hash: " << token.encode << "\n"
-			<< "line: " << token.line << " "<< "start: " << token.start << " "<< "end: " << token.end
-			;
+			<< "line: " << token.line << " "<< "start: " << token.start << " "<< "end: " << token.end;
 	}
 }

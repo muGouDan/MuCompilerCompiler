@@ -181,13 +181,13 @@ private:
 	{
 		if (ptr->error_action == nullptr)
 		{
-			if (ptr->input)
+			if (ptr->input_text)
 			{
 				std::stringstream ss;
 				ss << "Expected Symbol:";
 				for (const auto& item : expects)
 					ss << " \'" << ptr->sym_table[item] << "\' ";
-				Highlight(*(ptr->input), *(ptr->token_set), token_iter, ss.str());
+				Highlight(*(ptr->input_text), *(ptr->token_set), token_iter, ss.str());
 			}
 			if ((*ptr->token_set)[token_iter].type == Scanner::TokenType::end_symbol)
 			{
@@ -211,29 +211,29 @@ public:
 		return my_parser.Parse(token_set, TransferForDefinition, SemanticActionDispatcher, ErrorActionDispatcher, this);
 	}
 
-	void SetInput(std::vector<LineContent>& input)
+	void SetInput(std::vector<LineContent>& input_text)
 	{
-		this->input = &input;
+		this->input_text = &input_text;
 	}
 
 	~SyntaxDirected()
 	{
-		while (!to_delete.empty())
+		while (!ILEntry_heap.empty())
 		{
-			delete to_delete.top();
-			to_delete.pop();
+			delete ILEntry_heap.top();
+			ILEntry_heap.pop();
 		}
 	}
 
 #pragma region For Custom Code 
 protected:
-	std::vector<LineContent>* input = nullptr;
+	std::vector<LineContent>* input_text = nullptr;
 	//Easy GC in Semantic Action
 	template<typename T>
 	T* MakeStorage(T* obj_ptr)
 	{
 		auto temp = new SealedValue<T>(obj_ptr);
-		to_delete.push(temp);
+		ILEntry_heap.push(temp);
 		return temp->value;
 	}
 
@@ -241,7 +241,7 @@ protected:
 	T* MakeStorageFrom(T obj)
 	{
 		auto temp = new SealedValue<T>(obj);
-		to_delete.push(temp);
+		ILEntry_heap.push(temp);
 		return temp->value;
 	}
 
@@ -277,7 +277,7 @@ protected:
 	}
 private:
 	Type* derive_ptr;
-	std::stack<Sealed*> to_delete;
+	std::stack<Sealed*> ILEntry_heap;
 #pragma endregion
 };
 
@@ -436,7 +436,7 @@ typename SyntaxDirected<T, Parser>::Sym SyntaxDirected<T, Parser>::TransferForDe
 		{
 			if (token.type == candidate.type && token.name == candidate.name)
 				return candidate.sym;
-			else if (token.name == candidate.name)
+			else if (token.name == candidate.name && token.type != Scanner::TokenType::raw_string)
 				return candidate.sym;
 		}
 		else if (token.type == candidate.type)

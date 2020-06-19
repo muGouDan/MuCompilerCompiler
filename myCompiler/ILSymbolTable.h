@@ -48,20 +48,50 @@ private:
 
 std::ostream& operator << (std::ostream& out, const ILEntry& entry);
 
+struct Address
+{
+	// if size() == 0 , address is a temp;
+	std::vector<const ILEntry*> chain;
+	std::vector<Address*> array_index;
+	std::string code;
+	Scanner::Token* token = nullptr;
+	friend class ILEnv;
+	friend std::ostream& operator << (std::ostream& out, const Address& addr);
+private:
+	size_t id;
+	Address(){}
+};
+
+std::ostream& operator << (std::ostream& out, const Address& addr);
+
+struct ILCode
+{
+	// res op left right
+	Address* res;
+	std::string op;
+	Address* left;
+	Address* right;
+};
+
+std::ostream& operator << (std::ostream& out, const ILCode& code);
+
 class ILEnv
 {
 	using ILSymbolTable = std::vector<ILEntry*>;
 	
 	std::stack<ILSymbolTable*> table_stack;
 	std::stack<size_t> offset_stack;	
-	std::vector<ILEntry*> to_delete;
+	std::vector<ILEntry*> ILEntry_heap;
+	std::vector<Address*> address_heap;
 	std::stack<Sealed*> sealed_value;
+	size_t address_id = 0;
 public:
 	ILSymbolTable* top;
 	ILSymbolTable* var_head;
 	ILSymbolTable* type_head;
 	bool is_typedef = false;
 	size_t offset;
+	std::vector<ILCode> ILCodeStream;
 	ILEnv():
 		var_head(new ILSymbolTable()),
 		type_head(new ILSymbolTable()),
@@ -76,8 +106,10 @@ public:
 			delete sealed_value.top();
 			sealed_value.pop();
 		}
-		for (auto entry : to_delete)
+		for (auto entry : ILEntry_heap)
 			delete entry;
+		for (auto address : address_heap)
+			delete address;
 	}
 	template<typename T>
 	T* CreateValue(T obj)
@@ -90,7 +122,14 @@ public:
 	ILEntry* CreateILEntry()
 	{
 		auto temp = new ILEntry();
-		to_delete.push_back(temp);
+		ILEntry_heap.push_back(temp);
+		return temp;
+	}
+	Address* CreateAddress()
+	{
+		auto temp = new Address();
+		temp->id = address_id++;
+		address_heap.push_back(temp);
 		return temp;
 	}
 	ILEntry* CreateVarFromCType(ILEntry* src);

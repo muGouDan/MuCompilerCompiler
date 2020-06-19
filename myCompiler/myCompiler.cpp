@@ -16,16 +16,19 @@ using namespace Scanner;
 
 int main()
 {
-	auto input = FileLoader("definition_test.txt");
-	auto token_set = EasyScanner(input);
+	auto input_text = FileLoader("assignment_test.txt");
+	auto token_set = EasyScanner(input_text);
 	std::cout << "Scanner:" << std::endl;
-	Highlight(input, token_set);
+	Highlight(input_text, token_set);
 	std::cout << "\n" << std::endl;
 	ILGenerator iLgenerator("complete_syntax.syn");
-	iLgenerator.SetInput(input);
+	iLgenerator.SetInput(input_text);
 	if (iLgenerator.Parse(token_set))
 	{
-		Highlight(input, token_set);
-		iLgenerator.ShowTables();
+		Highlight(input_text, token_set);
+		//iLgenerator.ShowTables();
+		std::cout << "ILCode:" << std::endl;
+		iLgenerator.ShowILCode();
 	}
+	//iLgenerator.ShowTables();
 }

@@ -26,11 +26,17 @@ public:
 		AddAction(set_baseType);
 		AddAction(set_customeType);
 		AddAction(get_token);
-		AddAction(check_member);
-		AddAction(check_var_in_table);
-		AddAction(complete_memId);
+
+		AddAction(assign);
+		AddAction(create_addr);
+		AddAction(complete_lVal);
+		AddAction(start_lVal);
+		AddAction(filling_addr);
+		AddAction(start_Cmp);
+		AddAction(create_id_addr);
 		AddAction(complete_array);
 		AddAction(create_array_dimension);
+		AddAction(process_offset);
 		AddAction(inc_array_dimension);
 	}
 	void ShowTables()
@@ -42,11 +48,18 @@ public:
 		for (auto entry : *Env.var_head)
 			std::cout << *entry << std::endl;
 	}
+	void ShowILCode()
+	{
+		for (auto& code : Env.ILCodeStream)
+			std::cout << code << std::endl;
+	}
 private:
 	ILEnv Env;
-	std::stack<size_t> dimension_stack;
 	size_t cur_dim = 0;
-	void CreateAndPushDim()
+	Address* cur_addr = nullptr;
+	std::stack<Address*> addr_stack;
+	std::stack<size_t> dimension_stack;
+	void PushAndCreateDim()
 	{
 		dimension_stack.push(cur_dim);
 		cur_dim = 0;
@@ -207,98 +220,120 @@ private:
 #pragma endregion
 
 #pragma region _Assignment:
-	//LValCmp	->	LValCmp "." LValMem
-	void* check_member(INPUT)
+	//Asgn	->	LVal "=" RVal ";"
+	void* assign(INPUT)
 	{
-		auto& base_entry = GetValue(ILEntry, 0);
-		auto& sub_entry = GetValue(ILEntry, 2);
-		bool name_equal = false;
-		bool dimension_equal = false;
-		std::stringstream ss;
-		for (auto type_entry : *Env.type_head)
-			if (type_entry->token->name == base_entry.meta_type)
-				for (auto entry : *type_entry->table_ptr)
-				{
-					name_equal = entry->token->name == sub_entry.token->name;
-					dimension_equal = entry->array_info.size() == sub_entry.array_info.size();
-					if (name_equal)
-					{
-						if (dimension_equal)
-							return entry;
-						else
-						{
-							ss << "ERROR:array[" << entry->token->name
-								<< "]'s dimension is " << entry->array_info.size()
-								<< ",but this[" << sub_entry.token->name
-								<< "]'s dimension is " << sub_entry.array_info.size();
-						}
-					}
-				}
-		if(!name_equal)
-			ss << "ERROR: identifier[" << sub_entry.token->name
-				<< "] is undefined";
-		Highlight(*this->input, TokenSet, TokenIter, ss.str());
-		return SEMANTIC_ERROR;
+		Env.ILCodeStream.push_back({ GetPtr(Address,0),"",GetPtr(Address,2),NIL });
+		return NIL;
 	}
-	//LValCmp -> LValMem
-	void* check_var_in_table(INPUT)
-	{
-		auto& temp_entry = GetValue(ILEntry, 0);
-		bool name_equal = false;
-		bool dimension_equal = false;
-		std::stringstream ss;
-		for (auto entry : *Env.top)
-		{
-			name_equal = entry->token->name == temp_entry.token->name;
-			dimension_equal = entry->array_info.size() == temp_entry.array_info.size();
-			if (name_equal)
-			{
-				if (dimension_equal)
-					return entry;
-				else
-				{
-					ss	<< "ERROR:array[" << entry->token->name
-						<< "]'s dimension is " << entry->array_info.size()
-						<< ",but this[" << temp_entry.token->name
-						<< "]'s dimension is " << temp_entry.array_info.size();
-				}
-			}
-		}
-		if (!name_equal)
-			ss << "ERROR: identifier[" << temp_entry.token->name
-			<< "] is undefined";
-		Highlight(*this->input, TokenSet, TokenIter, ss.str());
-		return SEMANTIC_ERROR;
-	}
-	//MemId	->	Id
-	void* complete_memId(INPUT)
+	//Val		->	ImVal
+	void* create_addr(INPUT)
 	{
 		auto token = GetPtr(Token, 0);
-		auto temp_entry = Env.CreateILEntry();
-		temp_entry->token = token;	
-		return temp_entry;
+		auto addr = Env.CreateAddress();
+		addr->token = token;
+		return addr;
 	}
-	//ArrVar ->	Id M_Ar Arr;
+	//LVal		->	M0 LValCmp
+	void* complete_lVal(INPUT)
+	{
+		Env.PopTable();
+		return PassOn(1);
+	}
+	//M0		->	epsilon
+	void* start_lVal(INPUT)
+	{
+		Env.PushTable();
+		Env.top = Env.var_head;
+		return NIL;
+	}
+	//LValCmp	->	LValCmp "." LValMem
+	void* filling_addr(INPUT)
+	{
+		auto LValCmp = GetPtr(Address, 0);
+		auto LValMem = GetPtr(Address, 2);
+		LValCmp->chain.push_back(LValMem->chain[0]);
+		if (LValMem->array_index.size())
+			LValCmp->array_index.push_back(LValMem->array_index[0]);
+		return LValCmp;
+	}
+	//LValCmp	->	LValMem
+	void* start_Cmp(INPUT)
+	{
+		auto addr = GetPtr(Address, 0);
+		Env.top = addr->chain[addr->chain.size() - 1]->table_ptr;
+		return addr;
+	}
+	//LValMem	->	MemId
+	void* create_id_addr(INPUT)
+	{
+		auto token = GetPtr(Token, 0);
+		if (Env.top != nullptr)
+		{
+			for (auto entry : *Env.top)
+				if (token->name == entry->token->name)
+				{
+					auto addr = Env.CreateAddress();
+					addr->chain.push_back(entry);
+					return addr;
+				}
+		}
+		Highlight(*input_text, TokenSet, TokenIter,
+			"ERROR: undefined " + token->name);
+		return SEMANTIC_ERROR;
+	}
+	//ArrVar	->	ArrId Arr
 	void* complete_array(INPUT)
 	{
-		auto token = GetPtr(Token, 0);
-		auto temp_entry = Env.CreateILEntry();
-		temp_entry->token = token;
-		temp_entry->array_info.resize(cur_dim);
-		PopDim();
-		return temp_entry;
+		auto ArrId = GetPtr(Address, 0);
+		auto Arr = GetPtr(Address, 1);
+		ArrId->array_index.push_back(Arr);
+		cur_addr = addr_stack.top();
+		addr_stack.pop();
+		return ArrId;
 	}
-	//M_Ar	-> epsilon
+	//ArrId  -> Id
 	void* create_array_dimension(INPUT)
 	{
-		CreateAndPushDim();
-		return nullptr;
+		auto token = GetPtr(Token, 0);
+		PushAndCreateDim();
+		if (Env.top != nullptr)
+		{
+			for (auto entry : *Env.top)
+				if (token->name == entry->token->name)
+				{
+					auto addr = Env.CreateAddress();
+					addr->chain.push_back(entry);
+					addr_stack.push(cur_addr);
+					cur_addr = addr;
+					return addr;
+				}
+		}
+		Highlight(*input_text, TokenSet, TokenIter,
+			"ERROR: undefined " + token->name);
+		return SEMANTIC_ERROR;
+	}
+	//Arr		->  Arr Cmp
+	void* process_offset(INPUT)
+	{
+		auto addr1 = GetPtr(Address, 0);
+		auto cur = cur_addr->chain[cur_addr->chain.size() - 1];
+		auto cur_size = cur->array_info[cur_dim - 1];
+		auto addr2 = GetPtr(Address, 1);
+		auto temp_mul = Env.CreateAddress();
+		auto temp_offset = Env.CreateAddress();
+		auto temp_size = Env.CreateAddress();
+		temp_size->code = std::to_string(cur_size);
+		Env.ILCodeStream.push_back({ temp_mul, "MUL", temp_size, addr1 });
+		Env.ILCodeStream.push_back({ temp_offset, "ADD", temp_mul, addr2 });
+		return temp_offset;
 	}
 	//Cmp	->	"[" RVal "]"
 	void* inc_array_dimension(INPUT)
 	{
+		auto addr = GetPtr(Address, 1);
 		++cur_dim;
-		return nullptr;
+		return addr;
 	}
 #pragma endregion
 };

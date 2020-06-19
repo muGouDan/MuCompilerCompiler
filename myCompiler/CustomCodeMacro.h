@@ -29,3 +29,4 @@
 #define CreateAs(Type,expr)			MakeStorage<Type>(new Type(expr))
 #define CreateFrom(expr)			MakeStorageFrom(expr)
 #define SEMANTIC_ERROR				(void*)1
+#define NIL							nullptr

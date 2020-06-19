@@ -52,35 +52,38 @@ Num		->	num;							{get_token};
 
 
 _Assignment:
-Asgn	->	LVal "=" RVal ";";
+Asgn	->	LVal "=" RVal ";";				{assign};
 
-RVal	->	RVal "+" Tpl;					{do_add};
-RVal	->	RVal "-" Tpl;					{do_sub};
+//RVal	->	RVal "+" Tpl;					{do_add};
+//RVal	->	RVal "-" Tpl;					{do_sub};
 RVal	->	Tpl;							{passon_0};
-Tpl		->	Tpl "*" Fn;						{do_mul};
-Tpl		->	Tpl "/" Fn;						{do_div};
+//Tpl		->	Tpl "*" Fn;						{do_mul};
+//Tpl		->	Tpl "/" Fn;						{do_div};
 Tpl		->	Fn;								{passon_0};
-Fn		->	"(" RVal ")";					{passon_1};
-Fn		->	"-" Val;						{do_negate};// new Temp Entry
+//Fn		->	"(" RVal ")";					{passon_1};
+//Fn		->	"-" Val;						{do_negate};// new Temp Entry
 Fn		->	 Val;							{passon_0};
 
 Val		->	LVal;							{passon_0};
-Val		->	ImVal;							{passon_0};
+Val		->	ImVal;							{create_addr};
+
 // struct
-LVal	->	LValCmp;						{passon_0};
-LValCmp	->	LValCmp "." LValMem;			{check_member};// get(0) check if ILEntry has LValMem in its table, passon_2
-LValCmp	->	LValMem;						{check_var_in_table};
+LVal	-> 	M0 LValCmp;						{complete_lVal};//pop the Env.top;
+M0		->	epsilon;						{start_lVal};//push Env.top;set Env.top as var_head;
+LValCmp	->	LValCmp "." LValMem;			{filling_addr};//connect LValMem<Address>.chain[0] to LValCmp<Address>.chain;
+LValCmp	->	LValMem;						{start_Cmp};// set LValMem<Address>.lastEntry.tableptr to Env.top; return LValMem<Address>;
 // baseType
-LValMem	->	MemId;							{passon_0};
-MemId	->	Id;								{complete_memId};
+LValMem	->	MemId;							{create_id_addr};//check MemId<Token>.name in table;create addr;return addr
+MemId	->	Id;								{passon_0};//passon_0
+
 // arrayType
 LValMem	->	ArrVar;							{passon_0};
 
-ArrVar	->	Id M_Ar Arr;					{complete_array};// new temp ILEntry set array dimension
-M_Ar	->	epsilon;						{create_array_dimension};
-Arr		->  Arr Cmp;						
-Arr		->	Cmp;							
-Cmp		->	"[" RVal "]";					{inc_array_dimension};//
+ArrVar	->	ArrId Arr;						{complete_array};//ArrId<Address>.array_index.push_back(Arr<Address>);pop Env.top; return AddrId<Address>;
+ArrId	->	Id;								{create_array_dimension};//check Id<Token>.name in Env.top;create addr;push Env.top;set entry.tableptr to Env.top; return addr;
+Arr		->  Arr Cmp;						{process_offset};//create addr for [t_mul,t_offset], Generator Code: "t_mul = Addr1 * (ArrayInfo[dimension-1])","t_offset = t_mul + Addr2"; return t_offset;
+Arr		->	Cmp;							{passon_0};
+Cmp		->	"[" RVal "]";					{inc_array_dimension};//return RVal<Address>;
 
 ImVal	->	Str;							{passon_0};
 ImVal	->	Num;							{passon_0};

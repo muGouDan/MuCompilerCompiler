@@ -12,4 +12,4 @@
 #include "Separator.h"
 #include "RawString.h"
 #include "FileLoader.h"
-std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input);
+std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input_text);

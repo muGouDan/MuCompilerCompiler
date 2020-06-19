@@ -132,9 +132,9 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set, Transfer_Func trans_func)
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
-		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		T input_term = trans_func(token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
+		if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);
 			switch (action.type)
@@ -199,9 +199,9 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set, Transfer_Func trans_func,
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
-		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		T input_term = trans_func(token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
+		if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);
 			switch (action.type)
@@ -275,9 +275,9 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set,
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(ptr, token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
-		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		T input_term = trans_func(ptr, token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
+		if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);
 			switch (action.type)
@@ -344,9 +344,9 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set,
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(ptr, token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
-		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		T input_term = trans_func(ptr, token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
+		if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);
 			switch (action.type)
@@ -417,9 +417,9 @@ bool LR1Parser<T>::Parse(
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(ptr, token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
-		if (action_table.find({ state_stack.top(),input }) != action_table.end())
+		T input_term = trans_func(ptr, token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
+		if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);
 			switch (action.type)
@@ -517,8 +517,8 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set,
 			std::cout << "tokens run out without a End_Separator" << std::endl;
 			break;
 		}
-		T input = trans_func(ptr, token_set[iter]);
-		auto action_iter = action_table.find({ state_stack.top(),input });
+		T input_term = trans_func(ptr, token_set[iter]);
+		auto action_iter = action_table.find({ state_stack.top(),input_term });
 		if (action_iter != action_table.end())
 		{
 			auto& action = std::get<1>(*action_iter);

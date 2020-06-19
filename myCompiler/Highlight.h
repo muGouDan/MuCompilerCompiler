@@ -41,19 +41,19 @@ enum ConsoleForegroundColor
 void SetConsoleColor(ConsoleForegroundColor foreColor = enmCFC_White, ConsoleBackGroundColor backColor = enmCBC_Black);
 
 template<typename Input,typename TokenSet>
-void Highlight(Input&& input, TokenSet&& token_set)
+void Highlight(Input&& input_text, TokenSet&& token_set)
 {
 	size_t start = 0;
-	if (input.size())
-		start = input[0].line_no;
+	if (input_text.size())
+		start = input_text[0].line_no;
 	size_t token_iter = 0;
-	for (size_t i = 0; i < input.size(); i++)
+	for (size_t i = 0; i < input_text.size(); i++)
 	{
 		SetConsoleColor(enmCFC_White);
-		std::cout << "[" << input[i].line_no << "\t]";
+		std::cout << "[" << input_text[i].line_no << "\t]";
 		size_t j = 0;
 		bool over = false;
-		while (j < input[i].content.size())
+		while (j < input_text[i].content.size())
 		{
 			if (token_iter >= token_set.size())
 				over = true;
@@ -64,14 +64,14 @@ void Highlight(Input&& input, TokenSet&& token_set)
 					&& token_set[token_iter].start <= j)
 				{
 					SetConsoleColor(token_set[token_iter].color);
-					std::cout << input[i].content[j];
+					std::cout << input_text[i].content[j];
 					++j;
 				}
 				else if (i == token_set[token_iter].line -start && j < token_set[token_iter].start
 					|| i < token_set[token_iter].line - start)
 				{
 					SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
-					std::cout << input[i].content[j];
+					std::cout << input_text[i].content[j];
 					++j;
 				}
 				else if (i == token_set[token_iter].line - start && j > token_set[token_iter].end
@@ -83,7 +83,7 @@ void Highlight(Input&& input, TokenSet&& token_set)
 			else
 			{
 				SetConsoleColor(enmCFC_Green);
-				std::cout << input[i].content[j];
+				std::cout << input_text[i].content[j];
 				++j;
 			}
 		}
@@ -93,20 +93,20 @@ void Highlight(Input&& input, TokenSet&& token_set)
 }
 
 template<typename Input, typename TokenSet>
-void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter,std::string error_info = "Error Token")
+void Highlight(Input&& input_text, TokenSet&& token_set, size_t error_iter,std::string error_info = "Error Token")
 {
 	auto error = false;
 	size_t start = 0;
-	if (input.size())
-		start = input[0].line_no;
+	if (input_text.size())
+		start = input_text[0].line_no;
 	size_t token_iter = 0;
-	for (size_t i = 0; i < input.size(); i++)
+	for (size_t i = 0; i < input_text.size(); i++)
 	{
 		SetConsoleColor(enmCFC_White);
-		std::cout << "[" << input[i].line_no << "\t]";
+		std::cout << "[" << input_text[i].line_no << "\t]";
 		size_t j = 0;
 		bool over = false;
-		while (j < input[i].content.size())
+		while (j < input_text[i].content.size())
 		{
 			if (token_iter >= token_set.size())
 				over = true;
@@ -117,14 +117,14 @@ void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter,std::strin
 					&& token_set[token_iter].start <= j)
 				{
 					SetConsoleColor(token_set[token_iter].color);
-					std::cout << input[i].content[j];
+					std::cout << input_text[i].content[j];
 					++j;
 				}
 				else if (i == token_set[token_iter].line - start && j < token_set[token_iter].start
 					|| i < token_set[token_iter].line - start)
 				{
 					SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
-					std::cout << input[i].content[j];					
+					std::cout << input_text[i].content[j];					
 					++j;
 				}
 				else if (i == token_set[token_iter].line - start && j > token_set[token_iter].end
@@ -137,7 +137,7 @@ void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter,std::strin
 			else
 			{
 				SetConsoleColor(enmCFC_Green);
-				std::cout << input[i].content[j];
+				std::cout << input_text[i].content[j];
 				++j;
 			}
 		}
@@ -145,7 +145,7 @@ void Highlight(Input&& input, TokenSet&& token_set, size_t error_iter,std::strin
 		if (error)
 		{
 			SetConsoleColor(ConsoleForegroundColor::enmCFC_Red);
-			std::cout << "[" << input[i].line_no << "\t]";
+			std::cout << "[" << input_text[i].line_no << "\t]";
 			for (size_t t = 0; t < token_set[error_iter].start; ++t)
 				std::cout << " ";
 			std::cout << "^" << error_info << std::endl;
