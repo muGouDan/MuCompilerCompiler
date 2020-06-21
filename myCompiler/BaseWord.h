@@ -20,7 +20,7 @@ namespace Scanner
 		rel_op,
 		arith_op,
 		log_op,
-		digit,
+		number,
 		identifier,
 		assign,
 		keyword,

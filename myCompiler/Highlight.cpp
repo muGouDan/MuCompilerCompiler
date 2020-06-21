@@ -6,3 +6,5 @@ void SetConsoleColor(ConsoleForegroundColor foreColor, ConsoleBackGroundColor ba
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(handle, foreColor | backColor);
 }
+
+

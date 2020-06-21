@@ -4,7 +4,7 @@ bTy		->	keyword && "char";
 record	->	keyword && "struct";
 record	->	keyword && "class";
 str		->	raw_string;
-num		->	digit;
+num		->	number;
 id		->	identifier;
 cTy		->	custom_type;
 $$
@@ -23,10 +23,8 @@ VarDef	-> 	Def;
 
 Stc		->	M1 TyDef;						
 M1		->	epsilon;						{begin_typedef};// top = type_head
-TyDef	->	TyHead M2 "{" Defs"}" ";";		{end_typedef};// pop table;get ILEntry from TyHead;TyHead.width = offset;
+TyDef	->	TyHead "{" Defs"}" ";";			{end_typedef};// pop table;get ILEntry from TyHead;TyHead.width = offset;
 TyHead	->	Record Id;						{set_typeHead};// new ILEntry;set type(struct/class/...);set Token(cTyname); AddEntry;
-M2		->	epsilon;						{new_table};// push table;new table;
-
 Defs	->	Defs Def;						{building_defs};
 Defs	->	Def;							{begin_defs};
 Def 	->	Ty Id ";";						{set_as_def};// get ILEntry from Ty;Get Token from Id; Ty.token = Id.token; AddEntry;
@@ -54,14 +52,14 @@ Num		->	num;							{get_token};
 _Assignment:
 Asgn	->	LVal "=" RVal ";";				{assign};
 
-//RVal	->	RVal "+" Tpl;					{do_add};
-//RVal	->	RVal "-" Tpl;					{do_sub};
+RVal	->	RVal "+" Tpl;					{do_add};
+RVal	->	RVal "-" Tpl;					{do_sub};
 RVal	->	Tpl;							{passon_0};
-//Tpl		->	Tpl "*" Fn;						{do_mul};
-//Tpl		->	Tpl "/" Fn;						{do_div};
+Tpl		->	Tpl "*" Fn;						{do_mul};
+Tpl		->	Tpl "/" Fn;						{do_div};
 Tpl		->	Fn;								{passon_0};
-//Fn		->	"(" RVal ")";					{passon_1};
-//Fn		->	"-" Val;						{do_negate};// new Temp Entry
+Fn		->	"(" RVal ")";					{passon_1};
+Fn		->	"-" Val;						{do_negate};// new Temp Entry
 Fn		->	 Val;							{passon_0};
 
 Val		->	LVal;							{passon_0};

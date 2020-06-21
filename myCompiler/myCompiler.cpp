@@ -27,8 +27,8 @@ int main()
 	{
 		Highlight(input_text, token_set);
 		//iLgenerator.ShowTables();
-		std::cout << "ILCode:" << std::endl;
-		iLgenerator.ShowILCode();
 	}
+	std::cout << "ILCode:" << std::endl;
+	iLgenerator.HighlightIfError();
 	//iLgenerator.ShowTables();
 }

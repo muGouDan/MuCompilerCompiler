@@ -4,8 +4,8 @@ size_t ILEntry::tabs = 0;
 
 std::ostream& operator<<(std::ostream& out, const ILEntry& entry)
 {
-	ILEntry::ShowAllEntry(&entry);
-	return std::cout;
+	ILEntry::ShowAllEntry(out,&entry);
+	return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const Address& addr)
@@ -45,11 +45,13 @@ std::ostream& operator<<(std::ostream& out, const Address& addr)
 
 std::ostream& operator<<(std::ostream& out, const ILCode& code)
 {
-	out << *code.res << " <= " << code.op << " ";
+	if (code.res)
+		out << *code.res;
+	out << code.op << " ";
 	if (code.left)
 		out << *code.left;
 	if (code.right)
-		out <<" , "<<*code.right;
+		out <<", "<<*code.right;
 	return out;
 }
 
@@ -91,40 +93,40 @@ ILEntry* ILEnv::Copy(const ILEntry* current)
 	return ret;
 }
 
-void ILEntry::ShowRawEntry(const ILEntry* to_show)
+void ILEntry::ShowRawEntry(std::ostream& out,const ILEntry* to_show)
 {
-	std::cout << "MetaType<" << to_show->meta_type;
+	out << "MetaType<" << to_show->meta_type;
 	for (const auto& item : to_show->array_info)
-		std::cout << "[" << item << "]";
-	std::cout << "> ";
+		out << "[" << item << "]";
+	out << "> ";
 	if(to_show->token)
-		std::cout << "NameValPair<" << to_show->token->name << ",";
+		out << "NameValPair<" << to_show->token->name << ",";
 	else
-		std::cout << "Val<";
+		out << "Val<";
 	if (to_show->value.size())
-		std::cout << to_show->value << ">";
+		out << to_show->value << ">";
 	else
-		std::cout << "Null>";
-	std::cout << "Width[" << to_show->width << "] ";
-	std::cout << "Offset[" << to_show->offset << "] ";
+		out << "Null>";
+	out << "Width[" << to_show->width << "] ";
+	out << "Offset[" << to_show->offset << "] ";
 }
 
-void ILEntry::ShowAllEntry(const ILEntry* current)
+void ILEntry::ShowAllEntry(std::ostream& out,const ILEntry* current)
 {
-	ShowRawEntry(current);
+	ShowRawEntry(out,current);
 	if (current->table_ptr && current->independent)
 	{
 		++tabs;
 		for (size_t i = 0; i < (*current->table_ptr).size(); i++)
 		{
-			std::cout << std::endl;
+			out << std::endl;
 			for (size_t j = 0; j < tabs; ++j)
-				std::cout << "\t";
+				out << "\t";
 			if (i < (*current->table_ptr).size() - 1)
-				std::cout << "й└йд ";
+				out << "й└йд ";
 			else
-				std::cout << "й╕йд ";
-			ShowAllEntry((*current->table_ptr)[i]);
+				out << "й╕йд ";
+			ShowAllEntry(out,(*current->table_ptr)[i]);
 		}
 		--tabs;
 	}

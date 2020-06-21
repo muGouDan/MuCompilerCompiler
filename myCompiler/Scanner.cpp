@@ -8,7 +8,7 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input_te
 	Scanner::ArithmeticOperator arithOp;
 	Scanner::Keyword keyword;
 	Scanner::Identifier identifier;
-	Scanner::Digit digit;
+	Scanner::Number number;
 	Scanner::Assignment assign;
 	Scanner::Separator separator;
 	Scanner::RawString raw_string;
@@ -55,7 +55,7 @@ std::vector<Scanner::Token> EasyScanner(const std::vector<LineContent>& input_te
 			}
 			if (raw_string.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(raw_string.current_token);
 			if (!raw_string.YetNotStart()) c = '\0';
-			if (digit.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(digit.current_token);
+			if (number.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(number.current_token);
 			if (assign.Scann(c, input_text[line].line_no, iter, next)) token_set.push_back(assign.current_token);
 			if (keyword.Scann(c, input_text[line].line_no, iter, next))
 			{

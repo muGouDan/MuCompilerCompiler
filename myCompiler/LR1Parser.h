@@ -3,7 +3,7 @@
 #include "BaseWord.h"
 #include <stack>
 #include <vector>
-#define SEMANTIC_ERROR (void*)1
+#define STOP_PARSING (void*)1
 
 //#define LR1_Debug
 
@@ -565,7 +565,7 @@ bool LR1Parser<T>::Parse(const Token_Set& token_set,
 					<< " push state: " << goto_state << std::endl;
 #endif // LR1_Debug
 				auto back = semantic_action(ptr, std::move(pass), (size_t)action.sym, action.production_index, top_token_iter);
-				if (back == SEMANTIC_ERROR)
+				if (back == STOP_PARSING)
 				{
 					on = false;
 					std::cout << information << ":LR1Parse STOP for semantic Error" << std::endl;

@@ -3,9 +3,13 @@ struct Student
 {
 	int age = 18;
 	int num = 0;
-	char[30][5] name = "none"; 
+	char[30][5] table; 
 };
 Student alan;
 int a = 1;
 int b = 2;
-c = alan.name[a][b];
+int d;
+d = - alan.table[1][b][2];
+d = aan;
+c = alan.age.num;
+d = aan;

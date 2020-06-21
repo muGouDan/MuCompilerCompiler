@@ -81,7 +81,7 @@ namespace Parser
 			switch (token.type)
 			{
 			case Scanner::TokenType::identifier:
-			case Scanner::TokenType::digit:
+			case Scanner::TokenType::number:
 				ret = elem;
 				break;
 			case Scanner::TokenType::arith_op:

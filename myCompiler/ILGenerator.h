@@ -17,7 +17,6 @@ public:
 		AddAction(begin_typedef);
 		AddAction(end_typedef);
 		AddAction(set_typeHead);
-		AddAction(new_table);
 		AddAction(set_as_def);
 		AddAction(set_def_with_val);
 		AddAction(complete_arrayType);
@@ -28,6 +27,11 @@ public:
 		AddAction(get_token);
 
 		AddAction(assign);
+		AddAction(do_add);
+		AddAction(do_sub);
+		AddAction(do_mul);
+		AddAction(do_div);
+		AddAction(do_negate);
 		AddAction(create_addr);
 		AddAction(complete_lVal);
 		AddAction(start_lVal);
@@ -42,16 +46,21 @@ public:
 	void ShowTables()
 	{
 		std::cout << "TypeTable:" << std::endl;
-		for (auto entry : *Env.type_head)
+		for (auto entry : *Env.type_head->table_ptr)
 			std::cout << *entry << std::endl;
 		std::cout << "VarTable:" << std::endl;
-		for (auto entry : *Env.var_head)
+		for (auto entry : *Env.var_head->table_ptr)
 			std::cout << *entry << std::endl;
 	}
 	void ShowILCode()
 	{
-		for (auto& code : Env.ILCodeStream)
-			std::cout << code << std::endl;
+		for (size_t i = 0; i < Env.ILCodeStream.size(); ++i)
+			std::cout << "[" << i << "\t]" << Env.ILCodeStream[i] << std::endl;
+	}
+	void HighlightIfError()
+	{
+		if (error_info_pair.size())
+			Highlight(*input_text, *this->token_set, error_info_pair);
 	}
 private:
 	ILEnv Env;
@@ -59,6 +68,7 @@ private:
 	Address* cur_addr = nullptr;
 	std::stack<Address*> addr_stack;
 	std::stack<size_t> dimension_stack;
+	std::vector<std::pair<size_t, std::string>> error_info_pair;
 	void PushAndCreateDim()
 	{
 		dimension_stack.push(cur_dim);
@@ -109,7 +119,7 @@ private:
 				TokenSet[i].color = enmCFC_Cyan;
 			}
 		entry->width = Env.offset;
-		Env.PopTable();
+		Env.PopEntry();
 		return nullptr;
 	}
 	//TyHead	->	Record Id	
@@ -118,26 +128,20 @@ private:
 		auto entry = Env.CreateILEntry();
 		entry->meta_type = GetPtr(Scanner::Token, 0)->name;
 		entry->token = GetPtr(Scanner::Token, 1);
-		Env.AddEntryToCurrent(entry);
+		Env.AddSubEntryToCurrent(entry);
 		//head of type_table doesn't care about offset 
 		entry->offset = 0;
+		Env.PushEntry();
+		Env.top = entry;
 		return entry;
 	}
-	//M2		->	epsilon
-	void* new_table(INPUT)
-	{
-		Env.PushTable();
-		auto entry = Env.LastILEntryInCurTable();
-		entry->table_ptr = Env.CreateILTableAsCurrent();
-		return nullptr;
-	}
-	//Def		->	Ty Id
+	//Def		->	Ty Id ;
 	void* set_as_def(INPUT)
 	{
 		auto entry = GetPtr(ILEntry, 0);
 		auto token = GetPtr(Scanner::Token, 1);
 		entry->token = token;
-		Env.AddEntryToCurrent(entry);
+		Env.AddSubEntryToCurrent(entry);
 		return nullptr;
 	}
 	//Def		->	Ty Id "=" Id
@@ -147,7 +151,7 @@ private:
 		auto token = GetPtr(Scanner::Token, 1);
 		entry->token = token;
 		entry->value = GetValue(Token, 3).name;
-		Env.AddEntryToCurrent(entry);
+		Env.AddSubEntryToCurrent(entry);
 		return nullptr;
 	}
 	//Ty		->	Ty Arr
@@ -165,16 +169,16 @@ private:
 			entry->width *= size;
 			amount *= size;
 		}
-		Env.PushTable();
-		entry->table_ptr = Env.CreateILTableAsCurrent();
+		Env.PushEntry();
+		Env.top = entry;
 		for (size_t i = 0; i < amount; ++i)
 		{
 			auto sub_entry = Env.CreateILEntry();
 			sub_entry->meta_type = entry->meta_type;
 			sub_entry->width = width;
-			Env.AddEntryToCurrent(sub_entry);
+			Env.AddSubEntryToCurrent(sub_entry);
 		}
-		Env.PopTable();
+		Env.PopEntry();
 		return entry;
 	}
 	//Arr		->	Arr Cmp
@@ -198,7 +202,7 @@ private:
 	{
 		ILEntry* entry = nullptr;
 		const auto& token = CurrentToken;
-		for (const auto& type : *Env.type_head)
+		for (const auto& type : *Env.type_head->table_ptr)
 			if (type->token->name == token.name)
 				entry = Env.CreateVarFromCType(type);
 		return entry;
@@ -223,12 +227,63 @@ private:
 	//Asgn	->	LVal "=" RVal ";"
 	void* assign(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		Env.ILCodeStream.push_back({ GetPtr(Address,0),"",GetPtr(Address,2),NIL });
 		return NIL;
+	}
+	//RVal	->	RVal "+" Tpl;
+	void* do_add(INPUT)
+	{
+		IfSemanticErrorThenPassOn;
+		auto rval = GetPtr(Address, 0);
+		auto tpl = GetPtr(Address, 2);
+		auto new_addr = Env.CreateAddress();
+		Env.ILCodeStream.push_back({ new_addr,"ADD",rval,tpl });
+		return new_addr;
+	}
+	//RVal	->	RVal "-" Tpl;
+	void* do_sub(INPUT)
+	{
+		IfSemanticErrorThenPassOn;
+		auto rval = GetPtr(Address, 0);
+		auto tpl = GetPtr(Address, 2);
+		auto new_addr = Env.CreateAddress();
+		Env.ILCodeStream.push_back({ new_addr,"SUB",rval,tpl });
+		return new_addr;
+	}
+	//Tpl		->	Tpl "*" Fn
+	void* do_mul(INPUT)
+	{
+		IfSemanticErrorThenPassOn;
+		auto tpl = GetPtr(Address, 0);
+		auto fn = GetPtr(Address, 2);
+		auto new_addr = Env.CreateAddress();
+		Env.ILCodeStream.push_back({ new_addr,"MUL",tpl,fn });
+		return new_addr;
+	}
+	//Tpl		->	Tpl "/" Fn
+	void* do_div(INPUT)
+	{
+		IfSemanticErrorThenPassOn;
+		auto tpl = GetPtr(Address, 0);
+		auto fn = GetPtr(Address, 2);
+		auto new_addr = Env.CreateAddress();
+		Env.ILCodeStream.push_back({ new_addr,"DIV",tpl,fn });
+		return new_addr;
+	}
+	//Fn		->	"-" Val
+	void* do_negate(INPUT)
+	{
+		IfSemanticErrorThenPassOn;
+		auto addr = GetPtr(Address, 1);
+		auto new_addr = Env.CreateAddress();
+		Env.ILCodeStream.push_back({ new_addr,"-",addr,NIL });
+		return new_addr;
 	}
 	//Val		->	ImVal
 	void* create_addr(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto token = GetPtr(Token, 0);
 		auto addr = Env.CreateAddress();
 		addr->token = token;
@@ -237,40 +292,46 @@ private:
 	//LVal		->	M0 LValCmp
 	void* complete_lVal(INPUT)
 	{
-		Env.PopTable();
+		IfSemanticErrorThenPassOn;
+		Env.PopEntry();
 		return PassOn(1);
 	}
 	//M0		->	epsilon
 	void* start_lVal(INPUT)
 	{
-		Env.PushTable();
+		IfSemanticErrorThenPassOn;
+		Env.PushEntry();
 		Env.top = Env.var_head;
 		return NIL;
 	}
 	//LValCmp	->	LValCmp "." LValMem
 	void* filling_addr(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto LValCmp = GetPtr(Address, 0);
 		auto LValMem = GetPtr(Address, 2);
 		LValCmp->chain.push_back(LValMem->chain[0]);
 		if (LValMem->array_index.size())
 			LValCmp->array_index.push_back(LValMem->array_index[0]);
+		Env.top = LValMem->chain[0];
 		return LValCmp;
 	}
 	//LValCmp	->	LValMem
 	void* start_Cmp(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto addr = GetPtr(Address, 0);
-		Env.top = addr->chain[addr->chain.size() - 1]->table_ptr;
+		Env.top = addr->chain[addr->chain.size() - 1];
 		return addr;
 	}
 	//LValMem	->	MemId
 	void* create_id_addr(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto token = GetPtr(Token, 0);
-		if (Env.top != nullptr)
+		if (Env.top->table_ptr != nullptr)
 		{
-			for (auto entry : *Env.top)
+			for (auto entry : *Env.top->table_ptr)
 				if (token->name == entry->token->name)
 				{
 					auto addr = Env.CreateAddress();
@@ -278,8 +339,12 @@ private:
 					return addr;
 				}
 		}
-		Highlight(*input_text, TokenSet, TokenIter,
-			"ERROR: undefined " + token->name);
+		std::stringstream ss;
+		if(Env.top->token)
+			ss << "Error:\"" << Env.top->token->name << "\"has no such member \"" << token->name << "\"";
+		else
+			ss << "Error: undefined \"" << token->name << "\"";
+		error_info_pair.push_back({ TokenIter,ss.str() });
 		return SEMANTIC_ERROR;
 	}
 	//ArrVar	->	ArrId Arr
@@ -295,11 +360,12 @@ private:
 	//ArrId  -> Id
 	void* create_array_dimension(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto token = GetPtr(Token, 0);
 		PushAndCreateDim();
-		if (Env.top != nullptr)
+		if (Env.top->table_ptr != nullptr)
 		{
-			for (auto entry : *Env.top)
+			for (auto entry : *Env.top->table_ptr)
 				if (token->name == entry->token->name)
 				{
 					auto addr = Env.CreateAddress();
@@ -309,15 +375,23 @@ private:
 					return addr;
 				}
 		}
-		Highlight(*input_text, TokenSet, TokenIter,
-			"ERROR: undefined " + token->name);
+		error_info_pair.push_back({ TokenIter,"ERROR: undefined " + token->name });
 		return SEMANTIC_ERROR;
 	}
 	//Arr		->  Arr Cmp
 	void* process_offset(INPUT)
 	{
+		IfSemanticErrorThenPassOn;
 		auto addr1 = GetPtr(Address, 0);
 		auto cur = cur_addr->chain[cur_addr->chain.size() - 1];
+		if (cur_dim - 1 >= cur->array_info.size())
+		{
+			std::stringstream ss;
+			ss << "Error: array \"" << cur->token->name << "\"'s dimension is " 
+				<< cur->array_info.size() << ", but yours " << cur_dim <<".";
+			error_info_pair.push_back({ TokenIter,ss.str() });
+			return SEMANTIC_ERROR;
+		}
 		auto cur_size = cur->array_info[cur_dim - 1];
 		auto addr2 = GetPtr(Address, 1);
 		auto temp_mul = Env.CreateAddress();

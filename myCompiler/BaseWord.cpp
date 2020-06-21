@@ -15,7 +15,7 @@ namespace Scanner
 			Case(TokenType::arith_op);
 			Case(TokenType::keyword);
 			Case(TokenType::identifier);
-			Case(TokenType::digit);
+			Case(TokenType::number);
 			Case(TokenType::assign);
 			Case(TokenType::separator);
 			Case(TokenType::raw_string);
@@ -34,7 +34,7 @@ namespace Scanner
 		SELECT_TOKENTYPE(arith_op)
 		SELECT_TOKENTYPE(keyword)
 		SELECT_TOKENTYPE(identifier)
-		SELECT_TOKENTYPE(digit)
+		SELECT_TOKENTYPE(number)
 		SELECT_TOKENTYPE(assign)
 		SELECT_TOKENTYPE(separator)
 		SELECT_TOKENTYPE(raw_string)

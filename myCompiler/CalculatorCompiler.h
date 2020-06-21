@@ -265,7 +265,7 @@ public:
 	void* do_getid(INPUT)
 	{
 		auto res = Create(Id);
-		if (token_set[token_iter].type == Scanner::TokenType::digit)
+		if (token_set[token_iter].type == Scanner::TokenType::number)
 		{
 			res->computable = true;
 			res->name = token_set[token_iter].name;

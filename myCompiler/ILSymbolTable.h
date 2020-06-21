@@ -40,8 +40,8 @@ struct ILEntry
 private:
 	ILEntry(){}
 	friend std::ostream& operator<<(std::ostream& out, const ILEntry& entry);
-	static void ShowRawEntry(const ILEntry* to_show);
-	static void ShowAllEntry(const ILEntry* current);
+	static void ShowRawEntry(std::ostream& out,const ILEntry* to_show);
+	static void ShowAllEntry(std::ostream& out,const ILEntry* current);
 	static size_t tabs;
 };
 
@@ -51,7 +51,7 @@ std::ostream& operator << (std::ostream& out, const ILEntry& entry);
 struct Address
 {
 	// if size() == 0 , address is a temp;
-	std::vector<const ILEntry*> chain;
+	std::vector<ILEntry*> chain;
 	std::vector<Address*> array_index;
 	std::string code;
 	Scanner::Token* token = nullptr;
@@ -79,24 +79,33 @@ class ILEnv
 {
 	using ILSymbolTable = std::vector<ILEntry*>;
 	
-	std::stack<ILSymbolTable*> table_stack;
+	//std::stack<ILSymbolTable*> table_stack;
+	std::stack<ILEntry*> entry_stack;
 	std::stack<size_t> offset_stack;	
 	std::vector<ILEntry*> ILEntry_heap;
 	std::vector<Address*> address_heap;
 	std::stack<Sealed*> sealed_value;
 	size_t address_id = 0;
 public:
-	ILSymbolTable* top;
-	ILSymbolTable* var_head;
-	ILSymbolTable* type_head;
+	//ILSymbolTable* top;
+	//ILSymbolTable* var_head;
+	//ILSymbolTable* type_head;
+
+	ILEntry* top;
+	ILEntry* var_head;
+	ILEntry* type_head;
 	bool is_typedef = false;
 	size_t offset;
 	std::vector<ILCode> ILCodeStream;
 	ILEnv():
-		var_head(new ILSymbolTable()),
-		type_head(new ILSymbolTable()),
 		offset(0)
 	{
+		var_head = CreateILEntry();
+		var_head->table_ptr = new ILSymbolTable();
+		var_head->meta_type = "VAR";
+		type_head = CreateILEntry();
+		type_head->table_ptr = new ILSymbolTable();
+		type_head->meta_type = "TYPE";
 		top = var_head;
 	}
 	~ILEnv()
@@ -118,7 +127,6 @@ public:
 		sealed_value.push(temp);
 		return temp->value;
 	}
-
 	ILEntry* CreateILEntry()
 	{
 		auto temp = new ILEntry();
@@ -145,38 +153,40 @@ public:
 	}
 	// set entry.offset, and change the current offset with entry.width
 	// then add the entry to var_head
-	void AddEntryToCurrent(ILEntry* entry)
+	void AddSubEntryToCurrent(ILEntry* entry)
 	{
 		entry->offset = ceil((double)offset/(double)entry->width)* entry->width;
 		offset += entry->width;
-		top->push_back(entry);
+		if (!top->table_ptr)
+			top->table_ptr = new ILSymbolTable();
+		top->table_ptr->push_back(entry);
 	}
 
-	void PushTable()
+	void PushEntry()
 	{
-		table_stack.push(top);
+		entry_stack.push(top);
 		offset_stack.push(offset);
 		offset = 0;
 	}
 
-	ILSymbolTable* CreateILTableAsCurrent()
+	ILEntry* CreateILEntryWithTable()
 	{
-		auto temp = new ILSymbolTable();
-		top = temp;
+		auto temp = CreateILEntry();
+		temp->table_ptr = new ILSymbolTable();
 		return temp;
 	}
 
 	ILEntry* LastILEntryInCurTable()
 	{
-		return (*top)[top->size() - 1];
+		return (*top->table_ptr)[top->table_ptr->size() - 1];
 	}
 
-	void PopTable()
+	void PopEntry()
 	{
-		if (table_stack.size())
+		if (entry_stack.size())
 		{
-			top = table_stack.top();
-			table_stack.pop();
+			top = entry_stack.top();
+			entry_stack.pop();
 			offset = offset_stack.top();
 			offset_stack.pop();
 		}

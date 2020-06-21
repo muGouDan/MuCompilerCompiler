@@ -104,7 +104,6 @@ private:
 	};
 	Production_Flag current_flag;
 	std::string current_name;
-	Token_Set* token_set;
 	Production_Table production_table;
 	std::string scope_label = "_Global";
 	size_t part = 0;
@@ -218,22 +217,23 @@ public:
 
 	~SyntaxDirected()
 	{
-		while (!ILEntry_heap.empty())
+		while (!to_delete.empty())
 		{
-			delete ILEntry_heap.top();
-			ILEntry_heap.pop();
+			delete to_delete.top();
+			to_delete.pop();
 		}
 	}
 
 #pragma region For Custom Code 
 protected:
 	std::vector<LineContent>* input_text = nullptr;
+	Token_Set* token_set;
 	//Easy GC in Semantic Action
 	template<typename T>
 	T* MakeStorage(T* obj_ptr)
 	{
 		auto temp = new SealedValue<T>(obj_ptr);
-		ILEntry_heap.push(temp);
+		to_delete.push(temp);
 		return temp->value;
 	}
 
@@ -241,7 +241,7 @@ protected:
 	T* MakeStorageFrom(T obj)
 	{
 		auto temp = new SealedValue<T>(obj);
-		ILEntry_heap.push(temp);
+		to_delete.push(temp);
 		return temp->value;
 	}
 
@@ -275,9 +275,17 @@ protected:
 	{
 		error_action = action;
 	}
+
+	bool _hasSemanticError(INPUT)
+	{
+		for (auto item : input)
+			if (item == SEMANTIC_ERROR)
+				return true;
+		return false;
+	}
 private:
 	Type* derive_ptr;
-	std::stack<Sealed*> ILEntry_heap;
+	std::stack<Sealed*> to_delete;
 #pragma endregion
 };
 

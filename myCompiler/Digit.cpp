@@ -1,6 +1,6 @@
 #include "Digit.h"
 
-bool Scanner::Digit::Scann(char input, const size_t line_no, const size_t iter,char next)
+bool Scanner::Number::Scann(char input, const size_t line_no, const size_t iter,char next)
 {
 	token_valid = false;
 	if (last_char == '_' || isalpha(last_char))
